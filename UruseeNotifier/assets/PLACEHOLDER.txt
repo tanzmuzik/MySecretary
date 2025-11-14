@@ -1,0 +1,22 @@
+このディレクトリには以下のファイルを配置してください：
+
+1. icon.png - タスクトレイアイコン（256x256ピクセル）
+2. sounds/paan.mp3 - 通知効果音
+
+詳細は README_ASSETS.md を参照してください。
+
+アプリを起動する前に、これらのファイルを配置することをお勧めします。
+ファイルがない場合、アプリは起動時にエラーを表示する可能性があります。
+
+簡易的に、以下のコマンドで仮のファイルを作成できます：
+
+# Python + Pillow がインストールされている場合
+python3 -c "from PIL import Image; img = Image.new('RGB', (256, 256), 'red'); img.save('assets/icon.png')"
+
+# または、任意の256x256のPNG画像をコピー
+cp /path/to/your/image.png assets/icon.png
+
+効果音については、無料の効果音サイトからダウンロードするか、
+以下のようなオンラインツールで生成できます：
+- https://sfxr.me/
+- https://soundeffect-lab.info/

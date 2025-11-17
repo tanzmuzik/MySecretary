@@ -8,6 +8,7 @@ let settingsWindow = null;
 let serverProcess = null;
 let notificationWindows = [];
 let connectionCount = 0;
+let wsClient = null;
 
 // エラーログを書き込む関数
 function writeErrorLog(error) {
@@ -47,6 +48,59 @@ function createDefaultIcon() {
   return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAA7AAAAOwBeShxvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAE5SURBVFiF7Za9SgNBEMd/ZzYXiKJgYWNhYWFhYWFh4RNY+Qx+gI+QR/AFfAILCwsLCwsLCwsLCwsLC0FCCOTu5mwuCQlJ7u52N5L5w8Ltzv5mdnd2ZkDSpEmT/h1GVYGISBBFDeBIRNaq8v8LICIicQgXwJqIXFfl/xeAMfYIWAPaVfl/BzAW2gJrlfl/B7CwB6xX5v8dwBioU6l/AKSISGCA+sr8AwCc8xBwAA2VBQoAnHMQ8IDGygIFAM65GhAAjZUFfgCMsQ2CAo1/AlhrG0QFDP8EsNY2iAo0/gnAWtsgKtD8JwBrbYOoQPOfAKy1DaICrX8CsNY2iAq0/wnAWtsgKtD+JwBrbYOoQOefAKy1DaICvX8CsNY2iAoM/gnAWlsnKjD8J4C1tk5UYPhPAGttnajA6J8Ak+rffgMJkiRJ/pgXuKC5tZe9MvcAAAAASUVORK5CYII=';
 }
 
+// WebSocketクライアント接続
+function connectWebSocketClient() {
+  try {
+    const WebSocket = require('ws');
+    wsClient = new WebSocket('ws://localhost:5555');
+
+    wsClient.on('open', () => {
+      console.log('WebSocket client connected');
+    });
+
+    wsClient.on('close', () => {
+      console.log('WebSocket client disconnected');
+      wsClient = null;
+      // 3秒後に再接続
+      setTimeout(connectWebSocketClient, 3000);
+    });
+
+    wsClient.on('error', (err) => {
+      console.error('WebSocket client error:', err);
+    });
+
+    wsClient.on('message', (data) => {
+      console.log('Received message:', data.toString());
+      createNotificationWindow(data.toString());
+    });
+  } catch (err) {
+    console.error('Failed to connect WebSocket client:', err);
+    wsClient = null;
+  }
+}
+
+// メッセージを送信
+function sendMessage() {
+  if (wsClient && wsClient.readyState === 1) {
+    wsClient.send('うるせぇ！');
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'UruseeNotifier',
+      message: '送信しました！',
+      detail: 'ネットワーク内の他のユーザーに匿名メッセージが送信されました。',
+      buttons: ['OK']
+    });
+  } else {
+    dialog.showMessageBox({
+      type: 'warning',
+      title: 'UruseeNotifier',
+      message: '送信できません',
+      detail: 'WebSocketサーバーに接続していません。\nサーバーが起動しているか確認してください。',
+      buttons: ['OK']
+    });
+  }
+}
+
 // サーバープロセスを起動
 function startServer() {
   const serverPath = path.join(__dirname, 'server.js');
@@ -73,6 +127,11 @@ function startServer() {
     });
 
     console.log('Server started successfully');
+
+    // サーバー起動後、クライアントとして接続
+    setTimeout(() => {
+      connectWebSocketClient();
+    }, 1000);
   } catch (err) {
     console.error('Failed to start server:', err);
     writeErrorLog(err);
@@ -115,14 +174,14 @@ function createSettingsWindow() {
       frame: true,
       resizable: false,
       webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
+        nodeIntegration: false,
+        contextIsolation: true,
       },
     });
 
     console.log('Settings window object created');
 
-    // シンプルな設定画面HTML（外部依存なし）
+    // 完全に静的なHTML（JavaScript依存なし）
     const settingsHTML = `<!DOCTYPE html>
 <html>
 <head>
@@ -132,132 +191,93 @@ function createSettingsWindow() {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Yu Gothic', 'Meiryo', sans-serif;
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       padding: 30px;
       height: 100vh;
       overflow-y: auto;
     }
     h1 {
-      color: #ff6b6b;
-      margin-bottom: 20px;
-      font-size: 28px;
+      color: white;
+      margin-bottom: 30px;
+      font-size: 32px;
       text-align: center;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     .section {
-      background: #2d2d2d;
-      border-radius: 10px;
-      padding: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 25px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      color: #333;
     }
     .section h2 {
-      color: #ff8787;
-      font-size: 18px;
+      color: #667eea;
+      font-size: 20px;
       margin-bottom: 15px;
-      border-bottom: 2px solid #ff6b6b;
+      border-bottom: 3px solid #667eea;
       padding-bottom: 10px;
     }
-    button {
-      background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      border-radius: 25px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
-      transition: all 0.3s;
-      width: 100%;
-    }
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(255, 107, 107, 0.5);
-    }
-    .send-button {
-      padding: 20px;
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    .status {
-      text-align: center;
-      padding: 15px;
-      background: #1a1a1a;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    .status-online { color: #4caf50; }
-    .status-offline { color: #ff6b6b; }
     .info {
-      background: #1a1a1a;
-      padding: 15px;
-      border-radius: 8px;
-      font-size: 12px;
-      color: #aaa;
-      line-height: 1.6;
+      line-height: 1.8;
+      font-size: 14px;
+      color: #555;
     }
-    .info p { margin-bottom: 8px; }
+    .info p {
+      margin-bottom: 12px;
+      padding-left: 10px;
+    }
+    .highlight {
+      background: #f0f4ff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 15px;
+      border-left: 4px solid #667eea;
+    }
+    .version {
+      text-align: center;
+      margin-top: 20px;
+      color: rgba(255,255,255,0.8);
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
   <h1>💢 UruseeNotifier</h1>
 
-  <button class="send-button" onclick="sendMsg()">うるせぇ！を送信</button>
-
   <div class="section">
-    <h2>接続状態</h2>
-    <div class="status">
-      <div id="status" class="status-offline">WebSocketサーバー: 接続中...</div>
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>使い方</h2>
+    <h2>✅ アプリは正常に動作しています</h2>
     <div class="info">
-      <p>📍 タスクトレイのアイコンを右クリックでメニューを表示</p>
-      <p>📍 上のボタンで匿名メッセージを送信</p>
-      <p>📍 同じネットワーク内の他のユーザーに通知が届きます</p>
+      <p>このウィンドウが表示されていれば、アプリケーションは正常に起動しています。</p>
     </div>
   </div>
 
-  <script>
-    const WebSocket = require('ws');
-    let ws = null;
+  <div class="section">
+    <h2>📖 使い方</h2>
+    <div class="info">
+      <p>🔹 <strong>タスクトレイのアイコンを右クリック</strong>してメニューを表示</p>
+      <p>🔹 メニューから「<strong>メッセージを送信</strong>」を選択</p>
+      <p>🔹 同じネットワーク内の他のユーザーに匿名メッセージが届きます</p>
+      <p>🔹 完全匿名なので送信者は特定できません</p>
+    </div>
+  </div>
 
-    function connect() {
-      try {
-        ws = new WebSocket('ws://localhost:5555');
-        ws.on('open', () => {
-          document.getElementById('status').textContent = 'WebSocketサーバー: 接続成功 ✓';
-          document.getElementById('status').className = 'status-online';
-        });
-        ws.on('close', () => {
-          document.getElementById('status').textContent = 'WebSocketサーバー: 切断';
-          document.getElementById('status').className = 'status-offline';
-          setTimeout(connect, 3000);
-        });
-        ws.on('error', () => {
-          document.getElementById('status').textContent = 'WebSocketサーバー: エラー';
-          document.getElementById('status').className = 'status-offline';
-        });
-      } catch (e) {
-        document.getElementById('status').textContent = 'WebSocketサーバー: 接続失敗';
-        document.getElementById('status').className = 'status-offline';
-      }
-    }
+  <div class="section">
+    <h2>⚙️ 機能</h2>
+    <div class="info">
+      <p>✓ WebSocketサーバー (ポート 5555)</p>
+      <p>✓ タスクトレイ常駐</p>
+      <p>✓ 匿名メッセージ送信</p>
+      <p>✓ ランダム位置通知表示</p>
+    </div>
+    <div class="highlight">
+      <strong>💡 ヒント：</strong> このウィンドウはいつでも閉じることができます。<br>
+      アプリはタスクトレイに常駐し続けます。
+    </div>
+  </div>
 
-    function sendMsg() {
-      if (ws && ws.readyState === 1) {
-        ws.send('うるせぇ！');
-        alert('送信しました！');
-      } else {
-        alert('WebSocketサーバーに接続していません');
-      }
-    }
-
-    connect();
-  </script>
+  <div class="version">UruseeNotifier v1.0.0</div>
 </body>
 </html>`;
 
@@ -477,10 +497,10 @@ function updateContextMenu() {
       }
     },
     {
-      label: 'メッセージを送信',
+      label: 'うるせぇ！を送信',
       click: () => {
         console.log('Send message menu item clicked');
-        createSettingsWindow();
+        sendMessage();
       }
     },
     { type: 'separator' },
@@ -684,6 +704,9 @@ app.on('window-all-closed', () => {
 
 // アプリケーション終了時の処理
 app.on('before-quit', () => {
+  if (wsClient) {
+    wsClient.close();
+  }
   if (serverProcess) {
     serverProcess.kill();
   }

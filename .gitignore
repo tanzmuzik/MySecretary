@@ -1,0 +1,14 @@
+# Temporary/uploaded files
+MySecretary-upload/
+*.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

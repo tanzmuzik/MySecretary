@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage, dialog } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage, dialog, shell } = require('electron');
 const path = require('path');
 const { fork } = require('child_process');
 const fs = require('fs');
@@ -96,111 +96,246 @@ function createSettingsWindow() {
       return;
     }
 
-  settingsWindow = new BrowserWindow({
-    width: 500,
-    height: 600,
-    show: false,
-    frame: true,
-    resizable: false,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
-  });
-
-  // 開発者ツールを開く（デバッグモードのみ）
-  if (process.env.NODE_ENV === 'development' || process.argv.includes('--debug')) {
-    settingsWindow.webContents.openDevTools();
-  }
-
-  // HTMLファイルを読み込む - パッケージ化後も動作するようにapp.getAppPath()を使用
-  const appPath = app.getAppPath();
-  const htmlPath = path.join(appPath, 'build', 'index.html');
-  console.log('App path:', appPath);
-  console.log('Loading HTML from:', htmlPath);
-  console.log('File exists:', require('fs').existsSync(htmlPath));
-
-  settingsWindow.loadFile(htmlPath).catch(err => {
-    console.error('Failed to load HTML:', err);
-
-    // 代替パスを試す
-    const altPath = path.join(__dirname, 'build', 'index.html');
-    console.log('Trying alternative path:', altPath);
-    console.log('Alt file exists:', require('fs').existsSync(altPath));
-
-    settingsWindow.loadFile(altPath).catch(err2 => {
-      console.error('Alternative path also failed:', err2);
-
-      // フォールバック：エラーメッセージを表示
-      settingsWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            body {
-              font-family: 'Yu Gothic', 'Meiryo', sans-serif;
-              padding: 40px;
-              background: #1a1a1a;
-              color: white;
-            }
-            h1 { color: #ff6b6b; }
-            pre {
-              background: #2d2d2d;
-              padding: 20px;
-              border-radius: 5px;
-              overflow: auto;
-              font-size: 12px;
-            }
-            button {
-              padding: 10px 20px;
-              background: #ff6b6b;
-              color: white;
-              border: none;
-              border-radius: 5px;
-              cursor: pointer;
-              margin-top: 20px;
-            }
-          </style>
-        </head>
-        <body>
-          <h1>⚠️ エラー: UIファイルが見つかりません</h1>
-          <p>アプリケーションファイルが正しくビルドされていない可能性があります。</p>
-          <h3>試したパス:</h3>
-          <pre>1. ${htmlPath}
-2. ${altPath}
-
-__dirname: ${__dirname}
-app.getAppPath(): ${appPath}
-process.resourcesPath: ${process.resourcesPath || 'N/A'}
-
-エラー1: ${err.message}
-エラー2: ${err2.message}</pre>
-          <h3>解決方法:</h3>
-          <ol>
-            <li>アプリを完全にアンインストール</li>
-            <li>最新版を再ダウンロード</li>
-            <li>再インストール</li>
-          </ol>
-          <button onclick="require('electron').ipcRenderer.send('restart-app')">アプリを再起動</button>
-        </body>
-        </html>
-      `)}`);
+    settingsWindow = new BrowserWindow({
+      width: 500,
+      height: 600,
+      show: true,  // すぐに表示して問題を確認
+      frame: true,
+      resizable: false,
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+        nodeIntegration: false,
+        contextIsolation: true,
+      },
     });
-  });
 
-  settingsWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-    console.error('Failed to load page:', errorCode, errorDescription);
-  });
+    // 開発者ツールを開く（常時有効）
+    settingsWindow.webContents.openDevTools();
 
-  settingsWindow.once('ready-to-show', () => {
-    settingsWindow.show();
-  });
+    // シンプルな設定画面を直接表示（ビルドファイル不要）
+    const simpleSettingsHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>UruseeNotifier - 設定</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: 'Yu Gothic', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: 30px;
+            height: 100vh;
+            overflow-y: auto;
+          }
+          h1 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-align: center;
+          }
+          .section {
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+          }
+          .section h2 {
+            color: #ff8787;
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 10px;
+          }
+          .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #404040;
+          }
+          .setting-item:last-child {
+            border-bottom: none;
+          }
+          .setting-label {
+            font-size: 14px;
+            color: #e0e0e0;
+          }
+          button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+            transition: all 0.3s;
+          }
+          button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 107, 107, 0.5);
+          }
+          button:active {
+            transform: translateY(0);
+          }
+          .send-button {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            margin-bottom: 20px;
+          }
+          .status {
+            text-align: center;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 20px;
+          }
+          .status-online {
+            color: #4caf50;
+          }
+          .status-offline {
+            color: #ff6b6b;
+          }
+          input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+          }
+          .info {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 10px;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>💢 UruseeNotifier</h1>
 
-  settingsWindow.on('closed', () => {
-    settingsWindow = null;
-  });
+        <button class="send-button" onclick="sendMessage()">
+          うるせぇ！を送信
+        </button>
+
+        <div class="section">
+          <h2>接続状態</h2>
+          <div class="status">
+            <div id="connection-status" class="status-offline">
+              WebSocketサーバー: 接続中...
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>設定</h2>
+          <div class="setting-item">
+            <span class="setting-label">サウンド効果</span>
+            <input type="checkbox" id="sound-enabled" checked onchange="toggleSound(this.checked)">
+          </div>
+          <div class="setting-item">
+            <span class="setting-label">通知を表示</span>
+            <input type="checkbox" id="notification-enabled" checked onchange="toggleNotification(this.checked)">
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>使い方</h2>
+          <div class="info">
+            <p>📍 タスクトレイのアイコンを右クリックでメニューを表示</p>
+            <p>📍 「うるせぇ！を送信」ボタンで匿名メッセージを送信</p>
+            <p>📍 同じネットワーク内の他のユーザーに通知が届きます</p>
+            <p>📍 完全匿名なので送信者は特定できません</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>診断情報</h2>
+          <div class="info">
+            <p>App Path: ${app.getAppPath()}</p>
+            <p>User Data: ${app.getPath('userData')}</p>
+            <p>__dirname: ${__dirname}</p>
+          </div>
+        </div>
+
+        <script>
+          // WebSocket接続
+          let ws = null;
+          let soundEnabled = true;
+          let notificationEnabled = true;
+
+          function connectWebSocket() {
+            ws = new WebSocket('ws://localhost:5555');
+
+            ws.onopen = () => {
+              console.log('Connected to WebSocket server');
+              document.getElementById('connection-status').textContent = 'WebSocketサーバー: 接続成功 ✓';
+              document.getElementById('connection-status').className = 'status-online';
+            };
+
+            ws.onclose = () => {
+              console.log('Disconnected from WebSocket server');
+              document.getElementById('connection-status').textContent = 'WebSocketサーバー: 切断されました';
+              document.getElementById('connection-status').className = 'status-offline';
+              // 再接続を試みる
+              setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = (error) => {
+              console.error('WebSocket error:', error);
+              document.getElementById('connection-status').textContent = 'WebSocketサーバー: エラー';
+              document.getElementById('connection-status').className = 'status-offline';
+            };
+
+            ws.onmessage = (event) => {
+              console.log('Received message:', event.data);
+              if (notificationEnabled && window.electronAPI) {
+                window.electronAPI.showNotification(event.data);
+              }
+            };
+          }
+
+          function sendMessage() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send('うるせぇ！');
+              alert('送信しました！');
+            } else {
+              alert('WebSocketサーバーに接続していません');
+            }
+          }
+
+          function toggleSound(enabled) {
+            soundEnabled = enabled;
+            console.log('Sound:', enabled);
+          }
+
+          function toggleNotification(enabled) {
+            notificationEnabled = enabled;
+            console.log('Notification:', enabled);
+          }
+
+          // 起動時にWebSocketに接続
+          connectWebSocket();
+        </script>
+      </body>
+      </html>
+    `;
+
+    settingsWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(simpleSettingsHTML)}`);
+
+    settingsWindow.on('closed', () => {
+      settingsWindow = null;
+    });
 
   } catch (error) {
     console.error('Failed to create settings window:', error);
@@ -338,7 +473,12 @@ function createNotificationWindow(message) {
 
 // コンテキストメニューを更新
 function updateContextMenu() {
-  if (!tray) return;
+  if (!tray) {
+    console.error('updateContextMenu: tray is null');
+    return;
+  }
+
+  console.log('Updating context menu with connection count:', connectionCount);
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -349,26 +489,59 @@ function updateContextMenu() {
     {
       label: '設定',
       click: () => {
+        console.log('Settings menu item clicked');
         createSettingsWindow();
       }
     },
     {
-      label: 'ログ',
+      label: 'ログを表示',
       click: () => {
-        // ログビューアを開く（設定ウィンドウ内で表示）
+        console.log('Log menu item clicked');
+        // ログファイルを開く
+        const logPath = path.join(app.getPath('userData'), 'error.log');
+        if (fs.existsSync(logPath)) {
+          shell.openPath(logPath);
+        } else {
+          dialog.showMessageBox({
+            type: 'info',
+            title: 'ログファイル',
+            message: 'ログファイルがまだ作成されていません',
+            buttons: ['OK']
+          });
+        }
+      }
+    },
+    {
+      label: 'メッセージを送信',
+      click: () => {
+        console.log('Send message menu item clicked');
         createSettingsWindow();
       }
     },
     { type: 'separator' },
     {
+      label: 'アプリ情報',
+      click: () => {
+        dialog.showMessageBox({
+          type: 'info',
+          title: 'UruseeNotifier',
+          message: 'UruseeNotifier v1.0.0',
+          detail: `タスクトレイ常駐型通知アプリ\n\nApp Path: ${app.getAppPath()}\nUser Data: ${app.getPath('userData')}`,
+          buttons: ['OK']
+        });
+      }
+    },
+    {
       label: '終了',
       click: () => {
+        console.log('Quit menu item clicked');
         app.quit();
       }
     }
   ]);
 
   tray.setContextMenu(contextMenu);
+  console.log('Context menu updated successfully');
 }
 
 // タスクトレイアイコンを作成
@@ -413,9 +586,9 @@ function createTray() {
     // コンテキストメニューを設定
     updateContextMenu();
 
-    tray.setToolTip('UruseeNotifier - クリックで設定を開く');
+    tray.setToolTip('UruseeNotifier - 右クリックでメニューを表示');
 
-    // 左クリックで設定ウィンドウを開く（Windowsでは動作しないことがある）
+    // 左クリックで設定ウィンドウを開く
     tray.on('click', () => {
       console.log('Tray icon LEFT clicked');
       createSettingsWindow();
@@ -427,14 +600,12 @@ function createTray() {
       createSettingsWindow();
     });
 
-    // 右クリックでもメニューを表示（Windows用）
-    tray.on('right-click', () => {
-      console.log('Tray icon RIGHT clicked');
-      tray.popUpContextMenu();
-    });
+    // Windowsでは setContextMenu() が自動的に右クリックメニューを表示する
+    // 明示的な right-click イベントハンドラーは不要（むしろ問題を引き起こす）
 
     console.log('Tray icon created successfully');
-    console.log('Registered events: click, double-click, right-click');
+    console.log('Registered events: click, double-click');
+    console.log('Context menu will be shown automatically on right-click');
 
   } catch (error) {
     console.error('Failed to create tray icon:', error);

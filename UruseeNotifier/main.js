@@ -7,6 +7,7 @@ let tray = null;
 let settingsWindow = null;
 let serverProcess = null;
 let notificationWindows = [];
+let connectionCount = 0;
 
 // エラーログを書き込む関数
 function writeErrorLog(error) {
@@ -335,6 +336,41 @@ function createNotificationWindow(message) {
   }, 3000);
 }
 
+// コンテキストメニューを更新
+function updateContextMenu() {
+  if (!tray) return;
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: `接続状態: ${connectionCount}人`,
+      enabled: false
+    },
+    { type: 'separator' },
+    {
+      label: '設定',
+      click: () => {
+        createSettingsWindow();
+      }
+    },
+    {
+      label: 'ログ',
+      click: () => {
+        // ログビューアを開く（設定ウィンドウ内で表示）
+        createSettingsWindow();
+      }
+    },
+    { type: 'separator' },
+    {
+      label: '終了',
+      click: () => {
+        app.quit();
+      }
+    }
+  ]);
+
+  tray.setContextMenu(contextMenu);
+}
+
 // タスクトレイアイコンを作成
 function createTray() {
   try {
@@ -374,58 +410,31 @@ function createTray() {
     tray = new Tray(icon);
     console.log('Tray object created successfully');
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: '接続状態: 0人',
-      enabled: false,
-      id: 'connection-status'
-    },
-    { type: 'separator' },
-    {
-      label: '設定',
-      click: () => {
-        createSettingsWindow();
-      }
-    },
-    {
-      label: 'ログ',
-      click: () => {
-        // ログビューアを開く（設定ウィンドウ内で表示）
-        createSettingsWindow();
-      }
-    },
-    { type: 'separator' },
-    {
-      label: '終了',
-      click: () => {
-        app.quit();
-      }
-    }
-  ]);
+    // コンテキストメニューを設定
+    updateContextMenu();
 
-  tray.setToolTip('UruseeNotifier - クリックで設定を開く');
-  tray.setContextMenu(contextMenu);
+    tray.setToolTip('UruseeNotifier - クリックで設定を開く');
 
-  // 左クリックで設定ウィンドウを開く（Windowsでは動作しないことがある）
-  tray.on('click', () => {
-    console.log('Tray icon LEFT clicked');
-    createSettingsWindow();
-  });
+    // 左クリックで設定ウィンドウを開く（Windowsでは動作しないことがある）
+    tray.on('click', () => {
+      console.log('Tray icon LEFT clicked');
+      createSettingsWindow();
+    });
 
-  // ダブルクリックでも開く
-  tray.on('double-click', () => {
-    console.log('Tray icon DOUBLE clicked');
-    createSettingsWindow();
-  });
+    // ダブルクリックでも開く
+    tray.on('double-click', () => {
+      console.log('Tray icon DOUBLE clicked');
+      createSettingsWindow();
+    });
 
-  // 右クリックでもメニューを表示（Windows用）
-  tray.on('right-click', () => {
-    console.log('Tray icon RIGHT clicked');
-    tray.popUpContextMenu();
-  });
+    // 右クリックでもメニューを表示（Windows用）
+    tray.on('right-click', () => {
+      console.log('Tray icon RIGHT clicked');
+      tray.popUpContextMenu();
+    });
 
-  console.log('Tray icon created successfully');
-  console.log('Registered events: click, double-click, right-click');
+    console.log('Tray icon created successfully');
+    console.log('Registered events: click, double-click, right-click');
 
   } catch (error) {
     console.error('Failed to create tray icon:', error);
@@ -442,13 +451,8 @@ function createTray() {
 
 // 接続状態を更新
 ipcMain.on('update-connection-count', (event, count) => {
-  if (tray) {
-    const contextMenu = tray.getContextMenu();
-    const item = contextMenu.getMenuItemById('connection-status');
-    if (item) {
-      item.label = `接続状態: ${count}人`;
-    }
-  }
+  connectionCount = count;
+  updateContextMenu();
 });
 
 // 通知を受信した時の処理

@@ -1,11 +1,18 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage } = require('electron');
 const path = require('path');
 const { fork } = require('child_process');
+const fs = require('fs');
 
 let tray = null;
 let settingsWindow = null;
 let serverProcess = null;
 let notificationWindows = [];
+
+// デフォルトアイコンを作成（Base64エンコードされたPNG）
+function createDefaultIcon() {
+  // 16x16の赤いアイコン（Base64エンコード）
+  return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABvSURBVDiN7ZKxDYAwDAS/JRmBEViBNdgANmEeRmAFVvBjUKQIiYIUfOlky7rTyTYAVJXsHhGx+gMRQVXJ7gCklMjuqCpSSn0BIoKZ0RdgZhAR+gLMDCJCX4CIYGZ0BVQVZoaqkhUYY1BVsgLGGADwARdBJR+BKkKVAAAAAElFTkSuQmCC';
+}
 
 // サーバープロセスを起動
 function startServer() {
@@ -176,9 +183,20 @@ function createNotificationWindow(message) {
 
 // タスクトレイアイコンを作成
 function createTray() {
-  // デフォルトアイコン（仮）
+  let icon;
   const iconPath = path.join(__dirname, 'assets', 'icon.png');
-  tray = new Tray(iconPath);
+
+  // アイコンファイルが存在するか確認
+  if (fs.existsSync(iconPath)) {
+    icon = nativeImage.createFromPath(iconPath);
+  } else {
+    // デフォルトアイコンを作成（16x16の赤い四角）
+    console.log('Icon file not found, using default icon');
+    const canvas = createDefaultIcon();
+    icon = nativeImage.createFromDataURL(canvas);
+  }
+
+  tray = new Tray(icon);
 
   const contextMenu = Menu.buildFromTemplate([
     {

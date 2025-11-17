@@ -2,6 +2,19 @@
 
 ローカルネットワーク内で「うるせぇ！」を送信し合う、タスクトレイ常駐型Electronアプリです。
 
+## ⚡ すぐに使いたい方へ（ビルド済みEXE）
+
+**何もインストールせずにすぐ使える！**
+
+1. GitHubのActionsページにアクセス: https://github.com/tanzmuzik/MySecretary/actions
+2. 最新の "Build Windows EXE" ワークフロー（✅緑チェック付き）をクリック
+3. 下部の "Artifacts" から **UruseeNotifier-Windows** をダウンロード
+4. 解凍して `UruseeNotifier Setup 1.0.0.exe` を実行
+
+詳しくは [`EXE_DOWNLOAD.md`](EXE_DOWNLOAD.md) を参照してください。
+
+---
+
 ## 📋 概要
 
 UruseeNotifierは、同じネットワーク内のユーザー同士で匿名で「うるせぇ！」というメッセージを送信できるシンプルなアプリケーションです。タスクトレイに常駐し、ワンクリックでメッセージを送信できます。

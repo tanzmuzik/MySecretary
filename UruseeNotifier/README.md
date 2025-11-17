@@ -13,6 +13,10 @@
 
 詳しくは [`EXE_DOWNLOAD.md`](EXE_DOWNLOAD.md) を参照してください。
 
+### 💻 動作環境
+- Windows 10 / 11（64bit）
+- その他の依存関係は不要（すべてEXEに同梱）
+
 ---
 
 ## 📋 概要

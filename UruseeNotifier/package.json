@@ -67,16 +67,16 @@
         "target": "nsis",
         "arch": ["x64"]
       },
-      "icon": "assets/icon.png",
+      "icon": "assets/icon.ico",
       "compression": "maximum"
     },
     "nsis": {
       "oneClick": true,
       "perMachine": false,
       "allowToChangeInstallationDirectory": false,
-      "installerIcon": "assets/icon.png",
-      "uninstallerIcon": "assets/icon.png",
-      "installerHeaderIcon": "assets/icon.png",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
       "createDesktopShortcut": false,
       "createStartMenuShortcut": true,
       "shortcutName": "UruseeNotifier",

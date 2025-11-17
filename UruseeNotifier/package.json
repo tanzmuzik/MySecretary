@@ -22,7 +22,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "electron-store": "^8.1.0",
     "ws": "^8.14.2"
   },
   "devDependencies": {
@@ -47,6 +46,8 @@
   "build": {
     "appId": "com.urusee.notifier",
     "productName": "UruseeNotifier",
+    "compression": "maximum",
+    "asar": true,
     "directories": {
       "output": "dist"
     },
@@ -55,11 +56,31 @@
       "server.js",
       "preload.js",
       "build/**/*",
-      "assets/**/*"
+      "assets/**/*",
+      "!**/*.md",
+      "!**/*.ts",
+      "!**/*.map",
+      "!src/**/*"
     ],
     "win": {
-      "target": "nsis",
-      "icon": "assets/icon.png"
+      "target": {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      "icon": "assets/icon.png",
+      "compression": "maximum"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "installerIcon": "assets/icon.png",
+      "uninstallerIcon": "assets/icon.png",
+      "installerHeaderIcon": "assets/icon.png",
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": true,
+      "shortcutName": "UruseeNotifier",
+      "deleteAppDataOnUninstall": true
     }
   }
 }

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage, dialog } = require('electron');
 const path = require('path');
 const { fork } = require('child_process');
 const fs = require('fs');
@@ -7,6 +7,38 @@ let tray = null;
 let settingsWindow = null;
 let serverProcess = null;
 let notificationWindows = [];
+
+// エラーログを書き込む関数
+function writeErrorLog(error) {
+  try {
+    const logDir = app.getPath('userData');
+    const logFile = path.join(logDir, 'error.log');
+    const timestamp = new Date().toISOString();
+    const logEntry = `\n[${timestamp}] ${error.stack || error.message || error}\n`;
+
+    fs.mkdirSync(logDir, { recursive: true });
+    fs.appendFileSync(logFile, logEntry, 'utf8');
+    console.error('Error logged to:', logFile);
+  } catch (logErr) {
+    console.error('Failed to write error log:', logErr);
+  }
+}
+
+// グローバルエラーハンドラー
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  writeErrorLog(error);
+
+  dialog.showErrorBox(
+    'UruseeNotifier - 予期しないエラー',
+    `アプリケーションでエラーが発生しました:\n\n${error.message}\n\nログファイル: ${path.join(app.getPath('userData'), 'error.log')}`
+  );
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  writeErrorLog(new Error(`Unhandled Rejection: ${reason}`));
+});
 
 // デフォルトアイコンを作成（Base64エンコードされたPNG）
 function createDefaultIcon() {
@@ -20,24 +52,48 @@ function startServer() {
   console.log('Starting server from:', serverPath);
 
   try {
+    // サーバーファイルが存在するか確認
+    if (!fs.existsSync(serverPath)) {
+      throw new Error(`Server file not found: ${serverPath}`);
+    }
+
     serverProcess = fork(serverPath);
+
     serverProcess.on('error', (err) => {
       console.error('Server error:', err);
+      writeErrorLog(err);
     });
+
     serverProcess.on('exit', (code) => {
       console.log('Server exited with code:', code);
+      if (code !== 0 && code !== null) {
+        console.error('Server exited with error code:', code);
+      }
     });
+
+    console.log('Server started successfully');
   } catch (err) {
     console.error('Failed to start server:', err);
+    writeErrorLog(err);
+
+    // サーバー起動失敗は致命的ではないので、警告のみ表示
+    dialog.showMessageBox({
+      type: 'warning',
+      title: 'UruseeNotifier - サーバー起動警告',
+      message: 'WebSocketサーバーの起動に失敗しました',
+      detail: `通知の送受信ができない可能性があります。\n\nエラー: ${err.message}`,
+      buttons: ['OK']
+    });
   }
 }
 
 // 設定ウィンドウを作成
 function createSettingsWindow() {
-  if (settingsWindow && !settingsWindow.isDestroyed()) {
-    settingsWindow.focus();
-    return;
-  }
+  try {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.focus();
+      return;
+    }
 
   settingsWindow = new BrowserWindow({
     width: 500,
@@ -144,6 +200,16 @@ process.resourcesPath: ${process.resourcesPath || 'N/A'}
   settingsWindow.on('closed', () => {
     settingsWindow = null;
   });
+
+  } catch (error) {
+    console.error('Failed to create settings window:', error);
+    writeErrorLog(error);
+
+    dialog.showErrorBox(
+      'UruseeNotifier - 設定ウィンドウエラー',
+      `設定ウィンドウの作成に失敗しました:\n\n${error.message}\n\nログファイル: ${path.join(app.getPath('userData'), 'error.log')}`
+    );
+  }
 }
 
 // 吹き出しウィンドウを作成
@@ -271,39 +337,42 @@ function createNotificationWindow(message) {
 
 // タスクトレイアイコンを作成
 function createTray() {
-  let icon;
-  const iconPath = path.join(__dirname, 'assets', 'icon.png');
-
-  console.log('Checking for icon at:', iconPath);
-  console.log('Icon exists:', fs.existsSync(iconPath));
-
-  // アイコンファイルが存在するか確認
-  if (fs.existsSync(iconPath)) {
-    console.log('Using custom icon from:', iconPath);
-    icon = nativeImage.createFromPath(iconPath);
-    // アイコンをリサイズ（16x16または32x32に）
-    icon = icon.resize({ width: 32, height: 32 });
-  } else {
-    // デフォルトアイコンを作成
-    console.log('Icon file not found at:', iconPath);
-    console.log('Using default built-in icon');
-    const dataURL = createDefaultIcon();
-    icon = nativeImage.createFromDataURL(dataURL);
-  }
-
-  if (icon.isEmpty()) {
-    console.error('ERROR: Icon is empty! This will cause problems.');
-  } else {
-    console.log('Icon created successfully. Size:', icon.getSize());
-  }
-
   try {
+    let icon;
+    const iconPath = path.join(__dirname, 'assets', 'icon.png');
+
+    console.log('Checking for icon at:', iconPath);
+    console.log('Icon exists:', fs.existsSync(iconPath));
+
+    // アイコンファイルが存在するか確認
+    if (fs.existsSync(iconPath)) {
+      console.log('Using custom icon from:', iconPath);
+      icon = nativeImage.createFromPath(iconPath);
+
+      if (icon.isEmpty()) {
+        console.warn('Custom icon is empty, using default icon');
+        const dataURL = createDefaultIcon();
+        icon = nativeImage.createFromDataURL(dataURL);
+      } else {
+        // アイコンをリサイズ（16x16または32x32に）
+        icon = icon.resize({ width: 32, height: 32 });
+      }
+    } else {
+      // デフォルトアイコンを作成
+      console.log('Icon file not found at:', iconPath);
+      console.log('Using default built-in icon');
+      const dataURL = createDefaultIcon();
+      icon = nativeImage.createFromDataURL(dataURL);
+    }
+
+    if (icon.isEmpty()) {
+      throw new Error('Icon is empty! Cannot create tray without an icon.');
+    } else {
+      console.log('Icon created successfully. Size:', icon.getSize());
+    }
+
     tray = new Tray(icon);
     console.log('Tray object created successfully');
-  } catch (err) {
-    console.error('ERROR creating tray:', err);
-    throw err;
-  }
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -357,6 +426,18 @@ function createTray() {
 
   console.log('Tray icon created successfully');
   console.log('Registered events: click, double-click, right-click');
+
+  } catch (error) {
+    console.error('Failed to create tray icon:', error);
+    writeErrorLog(error);
+
+    dialog.showErrorBox(
+      'UruseeNotifier - トレイアイコン作成エラー',
+      `トレイアイコンの作成に失敗しました:\n\n${error.message}\n\nログファイル: ${path.join(app.getPath('userData'), 'error.log')}`
+    );
+
+    throw error;
+  }
 }
 
 // 接続状態を更新
@@ -383,22 +464,76 @@ ipcMain.on('restart-app', () => {
 
 // アプリケーション起動時の処理
 app.whenReady().then(() => {
-  console.log('='.repeat(60));
-  console.log('UruseeNotifier starting...');
-  console.log('App path:', app.getAppPath());
-  console.log('User data path:', app.getPath('userData'));
-  console.log('__dirname:', __dirname);
-  console.log('='.repeat(60));
+  try {
+    console.log('='.repeat(60));
+    console.log('UruseeNotifier starting...');
+    console.log('App path:', app.getAppPath());
+    console.log('User data path:', app.getPath('userData'));
+    console.log('__dirname:', __dirname);
+    console.log('='.repeat(60));
 
-  startServer();
-  createTray();
+    // スタートアップ確認ダイアログを表示（デバッグ用）
+    if (process.argv.includes('--debug')) {
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'UruseeNotifier',
+        message: '起動中...',
+        detail: `App Path: ${app.getAppPath()}\nUser Data: ${app.getPath('userData')}`,
+        buttons: ['OK']
+      });
+    }
 
-  // Windowsではdockを非表示にする代わりに、ウィンドウを作成しない
-  if (app.dock) {
-    app.dock.hide();
+    startServer();
+
+    console.log('Creating tray icon...');
+    createTray();
+    console.log('Tray icon created!');
+
+    // Windowsではdockを非表示にする代わりに、ウィンドウを作成しない
+    if (app.dock) {
+      app.dock.hide();
+    }
+
+    console.log('UruseeNotifier started successfully!');
+
+    // 起動成功を通知（初回起動のみ）
+    const firstRunFile = path.join(app.getPath('userData'), 'first_run.txt');
+    if (!fs.existsSync(firstRunFile)) {
+      fs.writeFileSync(firstRunFile, new Date().toISOString(), 'utf8');
+
+      // トレイアイコンが作成されたことを確認するダイアログ
+      setTimeout(() => {
+        dialog.showMessageBox({
+          type: 'info',
+          title: 'UruseeNotifier',
+          message: '起動しました！',
+          detail: 'タスクトレイのアイコンを右クリックして設定を開いてください。\n\n（このメッセージは初回起動時のみ表示されます）',
+          buttons: ['OK']
+        });
+      }, 1000);
+    }
+
+  } catch (error) {
+    console.error('Error during startup:', error);
+    writeErrorLog(error);
+
+    dialog.showErrorBox(
+      'UruseeNotifier - 起動エラー',
+      `アプリケーションの起動に失敗しました:\n\n${error.message}\n\nログファイル: ${path.join(app.getPath('userData'), 'error.log')}`
+    );
+
+    app.quit();
   }
+}).catch((error) => {
+  console.error('Failed to start app:', error);
+  writeErrorLog(error);
 
-  console.log('UruseeNotifier started successfully!');
+  dialog.showErrorBox(
+    'UruseeNotifier - 致命的エラー',
+    `アプリケーションを起動できませんでした:\n\n${error.message}`
+  );
+
+  app.quit();
 });
 
 // すべてのウィンドウが閉じられた時の処理（タスクトレイアプリなので終了しない）

@@ -10,16 +10,26 @@ let notificationWindows = [];
 
 // デフォルトアイコンを作成（Base64エンコードされたPNG）
 function createDefaultIcon() {
-  // 16x16の赤いアイコン（Base64エンコード）
-  return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABvSURBVDiN7ZKxDYAwDAS/JRmBEViBNdgANmEeRmAFVvBjUKQIiYIUfOlky7rTyTYAVJXsHhGx+gMRQVXJ7gCklMjuqCpSSn0BIoKZ0RdgZhAR+gLMDCJCX4CIYGZ0BVQVZoaqkhUYY1BVsgLGGADwARdBJR+BKkKVAAAAAElFTkSuQmCC';
+  // 32x32の赤いアイコン（Base64エンコード）
+  return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAA7AAAAOwBeShxvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAE5SURBVFiF7Za9SgNBEMd/ZzYXiKJgYWNhYWFhYWFh4RNY+Qx+gI+QR/AFfAILCwsLCwsLCwsLCwsLC0FCCOTu5mwuCQlJ7u52N5L5w8Ltzv5mdnd2ZkDSpEmT/h1GVYGISBBFDeBIRNaq8v8LICIicQgXwJqIXFfl/xeAMfYIWAPaVfl/BzAW2gJrlfl/B7CwB6xX5v8dwBioU6l/AKSISGCA+sr8AwCc8xBwAA2VBQoAnHMQ8IDGygIFAM65GhAAjZUFfgCMsQ2CAo1/AlhrG0QFDP8EsNY2iAo0/gnAWtsgKtD8JwBrbYOoQPOfAKy1DaICrX8CsNY2iAq0/wnAWtsgKtD+JwBrbYOoQOefAKy1DaICvX8CsNY2iAoM/gnAWlsnKjD8J4C1tk5UYPhPAGttnajA6J8Ak+rffgMJkiRJ/pgXuKC5tZe9MvcAAAAASUVORK5CYII=';
 }
 
 // サーバープロセスを起動
 function startServer() {
-  serverProcess = fork(path.join(__dirname, 'server.js'));
-  serverProcess.on('error', (err) => {
-    console.error('Server error:', err);
-  });
+  const serverPath = path.join(__dirname, 'server.js');
+  console.log('Starting server from:', serverPath);
+
+  try {
+    serverProcess = fork(serverPath);
+    serverProcess.on('error', (err) => {
+      console.error('Server error:', err);
+    });
+    serverProcess.on('exit', (code) => {
+      console.log('Server exited with code:', code);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+  }
 }
 
 // 設定ウィンドウを作成
@@ -42,12 +52,47 @@ function createSettingsWindow() {
     },
   });
 
-  // 開発環境とプロダクション環境で異なるパスを読み込む
-  if (process.env.NODE_ENV === 'development') {
-    settingsWindow.loadURL('http://localhost:3000');
-  } else {
-    settingsWindow.loadFile(path.join(__dirname, 'build', 'index.html'));
-  }
+  // HTMLファイルを読み込む
+  const htmlPath = path.join(__dirname, 'build', 'index.html');
+  console.log('Loading HTML from:', htmlPath);
+
+  settingsWindow.loadFile(htmlPath).catch(err => {
+    console.error('Failed to load HTML:', err);
+    // フォールバック：エラーメッセージを表示
+    settingsWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #1a1a1a;
+            color: white;
+          }
+          h1 { color: #ff6b6b; }
+          pre {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 5px;
+            overflow: auto;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>エラー: UIファイルが見つかりません</h1>
+        <p>アプリケーションファイルが正しくインストールされていない可能性があります。</p>
+        <p>期待されるパス: ${htmlPath}</p>
+        <pre>エラー詳細:\n${err.message}\n\nディレクトリ: ${__dirname}</pre>
+        <p>再インストールを試してください。</p>
+      </body>
+      </html>
+    `)}`);
+  });
+
+  settingsWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    console.error('Failed to load page:', errorCode, errorDescription);
+  });
 
   settingsWindow.once('ready-to-show', () => {
     settingsWindow.show();
@@ -186,17 +231,36 @@ function createTray() {
   let icon;
   const iconPath = path.join(__dirname, 'assets', 'icon.png');
 
+  console.log('Checking for icon at:', iconPath);
+  console.log('Icon exists:', fs.existsSync(iconPath));
+
   // アイコンファイルが存在するか確認
   if (fs.existsSync(iconPath)) {
+    console.log('Using custom icon from:', iconPath);
     icon = nativeImage.createFromPath(iconPath);
+    // アイコンをリサイズ（16x16または32x32に）
+    icon = icon.resize({ width: 32, height: 32 });
   } else {
-    // デフォルトアイコンを作成（16x16の赤い四角）
-    console.log('Icon file not found, using default icon');
-    const canvas = createDefaultIcon();
-    icon = nativeImage.createFromDataURL(canvas);
+    // デフォルトアイコンを作成
+    console.log('Icon file not found at:', iconPath);
+    console.log('Using default built-in icon');
+    const dataURL = createDefaultIcon();
+    icon = nativeImage.createFromDataURL(dataURL);
   }
 
-  tray = new Tray(icon);
+  if (icon.isEmpty()) {
+    console.error('ERROR: Icon is empty! This will cause problems.');
+  } else {
+    console.log('Icon created successfully. Size:', icon.getSize());
+  }
+
+  try {
+    tray = new Tray(icon);
+    console.log('Tray object created successfully');
+  } catch (err) {
+    console.error('ERROR creating tray:', err);
+    throw err;
+  }
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -227,20 +291,16 @@ function createTray() {
     }
   ]);
 
-  tray.setToolTip('UruseeNotifier');
+  tray.setToolTip('UruseeNotifier - クリックで設定を開く');
   tray.setContextMenu(contextMenu);
 
-  // 左クリックで「うるせぇ！」を送信
+  // 左クリックで設定ウィンドウを開く
   tray.on('click', () => {
-    if (settingsWindow && !settingsWindow.isDestroyed()) {
-      settingsWindow.webContents.send('send-message', 'うるせぇ！');
-    }
-    // アイコンを一瞬光らせる（視覚フィードバック）
-    tray.setTitle('📢');
-    setTimeout(() => {
-      tray.setTitle('');
-    }, 300);
+    console.log('Tray icon clicked');
+    createSettingsWindow();
   });
+
+  console.log('Tray icon created successfully');
 }
 
 // 接続状態を更新
@@ -261,16 +321,28 @@ ipcMain.on('show-notification', (event, message) => {
 
 // アプリケーション起動時の処理
 app.whenReady().then(() => {
+  console.log('='.repeat(60));
+  console.log('UruseeNotifier starting...');
+  console.log('App path:', app.getAppPath());
+  console.log('User data path:', app.getPath('userData'));
+  console.log('__dirname:', __dirname);
+  console.log('='.repeat(60));
+
   startServer();
   createTray();
 
   // Windowsではdockを非表示にする代わりに、ウィンドウを作成しない
-  app.dock?.hide();
+  if (app.dock) {
+    app.dock.hide();
+  }
+
+  console.log('UruseeNotifier started successfully!');
 });
 
 // すべてのウィンドウが閉じられた時の処理（タスクトレイアプリなので終了しない）
-app.on('window-all-closed', (e) => {
-  e.preventDefault();
+app.on('window-all-closed', () => {
+  // タスクトレイアプリなので、何もしない（終了しない）
+  console.log('All windows closed, but staying in tray');
 });
 
 // アプリケーション終了時の処理

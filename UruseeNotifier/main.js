@@ -52,42 +52,85 @@ function createSettingsWindow() {
     },
   });
 
-  // HTMLファイルを読み込む
-  const htmlPath = path.join(__dirname, 'build', 'index.html');
+  // 開発者ツールを開く（デバッグモードのみ）
+  if (process.env.NODE_ENV === 'development' || process.argv.includes('--debug')) {
+    settingsWindow.webContents.openDevTools();
+  }
+
+  // HTMLファイルを読み込む - パッケージ化後も動作するようにapp.getAppPath()を使用
+  const appPath = app.getAppPath();
+  const htmlPath = path.join(appPath, 'build', 'index.html');
+  console.log('App path:', appPath);
   console.log('Loading HTML from:', htmlPath);
+  console.log('File exists:', require('fs').existsSync(htmlPath));
 
   settingsWindow.loadFile(htmlPath).catch(err => {
     console.error('Failed to load HTML:', err);
-    // フォールバック：エラーメッセージを表示
-    settingsWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            background: #1a1a1a;
-            color: white;
-          }
-          h1 { color: #ff6b6b; }
-          pre {
-            background: #2d2d2d;
-            padding: 20px;
-            border-radius: 5px;
-            overflow: auto;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>エラー: UIファイルが見つかりません</h1>
-        <p>アプリケーションファイルが正しくインストールされていない可能性があります。</p>
-        <p>期待されるパス: ${htmlPath}</p>
-        <pre>エラー詳細:\n${err.message}\n\nディレクトリ: ${__dirname}</pre>
-        <p>再インストールを試してください。</p>
-      </body>
-      </html>
-    `)}`);
+
+    // 代替パスを試す
+    const altPath = path.join(__dirname, 'build', 'index.html');
+    console.log('Trying alternative path:', altPath);
+    console.log('Alt file exists:', require('fs').existsSync(altPath));
+
+    settingsWindow.loadFile(altPath).catch(err2 => {
+      console.error('Alternative path also failed:', err2);
+
+      // フォールバック：エラーメッセージを表示
+      settingsWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: 'Yu Gothic', 'Meiryo', sans-serif;
+              padding: 40px;
+              background: #1a1a1a;
+              color: white;
+            }
+            h1 { color: #ff6b6b; }
+            pre {
+              background: #2d2d2d;
+              padding: 20px;
+              border-radius: 5px;
+              overflow: auto;
+              font-size: 12px;
+            }
+            button {
+              padding: 10px 20px;
+              background: #ff6b6b;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              margin-top: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>⚠️ エラー: UIファイルが見つかりません</h1>
+          <p>アプリケーションファイルが正しくビルドされていない可能性があります。</p>
+          <h3>試したパス:</h3>
+          <pre>1. ${htmlPath}
+2. ${altPath}
+
+__dirname: ${__dirname}
+app.getAppPath(): ${appPath}
+process.resourcesPath: ${process.resourcesPath || 'N/A'}
+
+エラー1: ${err.message}
+エラー2: ${err2.message}</pre>
+          <h3>解決方法:</h3>
+          <ol>
+            <li>アプリを完全にアンインストール</li>
+            <li>最新版を再ダウンロード</li>
+            <li>再インストール</li>
+          </ol>
+          <button onclick="require('electron').ipcRenderer.send('restart-app')">アプリを再起動</button>
+        </body>
+        </html>
+      `)}`);
+    });
   });
 
   settingsWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
@@ -294,13 +337,26 @@ function createTray() {
   tray.setToolTip('UruseeNotifier - クリックで設定を開く');
   tray.setContextMenu(contextMenu);
 
-  // 左クリックで設定ウィンドウを開く
+  // 左クリックで設定ウィンドウを開く（Windowsでは動作しないことがある）
   tray.on('click', () => {
-    console.log('Tray icon clicked');
+    console.log('Tray icon LEFT clicked');
     createSettingsWindow();
   });
 
+  // ダブルクリックでも開く
+  tray.on('double-click', () => {
+    console.log('Tray icon DOUBLE clicked');
+    createSettingsWindow();
+  });
+
+  // 右クリックでもメニューを表示（Windows用）
+  tray.on('right-click', () => {
+    console.log('Tray icon RIGHT clicked');
+    tray.popUpContextMenu();
+  });
+
   console.log('Tray icon created successfully');
+  console.log('Registered events: click, double-click, right-click');
 }
 
 // 接続状態を更新
@@ -317,6 +373,12 @@ ipcMain.on('update-connection-count', (event, count) => {
 // 通知を受信した時の処理
 ipcMain.on('show-notification', (event, message) => {
   createNotificationWindow(message);
+});
+
+// アプリを再起動
+ipcMain.on('restart-app', () => {
+  app.relaunch();
+  app.exit();
 });
 
 // アプリケーション起動時の処理

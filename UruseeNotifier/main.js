@@ -99,7 +99,7 @@ function createSettingsWindow() {
     settingsWindow = new BrowserWindow({
       width: 500,
       height: 600,
-      show: true,  // すぐに表示して問題を確認
+      show: true,
       frame: true,
       resizable: false,
       webPreferences: {
@@ -109,242 +109,273 @@ function createSettingsWindow() {
       },
     });
 
-    // 開発者ツールを開く（常時有効）
-    settingsWindow.webContents.openDevTools();
+    // 開発者ツールを開く（デバッグモードのみ）
+    if (process.argv.includes('--debug')) {
+      settingsWindow.webContents.openDevTools();
+    }
+
+    // パス情報を取得
+    const appPath = app.getAppPath();
+    const userData = app.getPath('userData');
+    const dirname = __dirname;
 
     // シンプルな設定画面を直接表示（ビルドファイル不要）
-    const simpleSettingsHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>UruseeNotifier - 設定</title>
-        <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          body {
-            font-family: 'Yu Gothic', 'Meiryo', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: white;
-            padding: 30px;
-            height: 100vh;
-            overflow-y: auto;
-          }
-          h1 {
-            color: #ff6b6b;
-            margin-bottom: 20px;
-            font-size: 28px;
-            text-align: center;
-          }
-          .section {
-            background: #2d2d2d;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-          }
-          .section h2 {
-            color: #ff8787;
-            font-size: 18px;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #ff6b6b;
-            padding-bottom: 10px;
-          }
-          .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #404040;
-          }
-          .setting-item:last-child {
-            border-bottom: none;
-          }
-          .setting-label {
-            font-size: 14px;
-            color: #e0e0e0;
-          }
-          button {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
-            transition: all 0.3s;
-          }
-          button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(255, 107, 107, 0.5);
-          }
-          button:active {
-            transform: translateY(0);
-          }
-          .send-button {
-            width: 100%;
-            padding: 20px;
-            font-size: 24px;
-            margin-bottom: 20px;
-          }
-          .status {
-            text-align: center;
-            padding: 15px;
-            background: #1a1a1a;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-top: 20px;
-          }
-          .status-online {
-            color: #4caf50;
-          }
-          .status-offline {
-            color: #ff6b6b;
-          }
-          input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-          }
-          .info {
-            background: #1a1a1a;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 10px;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>💢 UruseeNotifier</h1>
+    const simpleSettingsHTML = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>UruseeNotifier - 設定</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Yu Gothic', 'Meiryo', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: white;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    h1 {
+      color: #ff6b6b;
+      margin-bottom: 20px;
+      font-size: 28px;
+      text-align: center;
+    }
+    .section {
+      background: #2d2d2d;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    .section h2 {
+      color: #ff8787;
+      font-size: 18px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #ff6b6b;
+      padding-bottom: 10px;
+    }
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #404040;
+    }
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+    .setting-label {
+      font-size: 14px;
+      color: #e0e0e0;
+    }
+    button {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+      transition: all 0.3s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(255, 107, 107, 0.5);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .send-button {
+      width: 100%;
+      padding: 20px;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .status {
+      text-align: center;
+      padding: 15px;
+      background: #1a1a1a;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-top: 20px;
+    }
+    .status-online {
+      color: #4caf50;
+    }
+    .status-offline {
+      color: #ff6b6b;
+    }
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    .info {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+    .info p {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>💢 UruseeNotifier</h1>
 
-        <button class="send-button" onclick="sendMessage()">
-          うるせぇ！を送信
-        </button>
+  <button class="send-button" onclick="sendMessage()">
+    うるせぇ！を送信
+  </button>
 
-        <div class="section">
-          <h2>接続状態</h2>
-          <div class="status">
-            <div id="connection-status" class="status-offline">
-              WebSocketサーバー: 接続中...
-            </div>
-          </div>
-        </div>
+  <div class="section">
+    <h2>接続状態</h2>
+    <div class="status">
+      <div id="connection-status" class="status-offline">
+        WebSocketサーバー: 接続中...
+      </div>
+    </div>
+  </div>
 
-        <div class="section">
-          <h2>設定</h2>
-          <div class="setting-item">
-            <span class="setting-label">サウンド効果</span>
-            <input type="checkbox" id="sound-enabled" checked onchange="toggleSound(this.checked)">
-          </div>
-          <div class="setting-item">
-            <span class="setting-label">通知を表示</span>
-            <input type="checkbox" id="notification-enabled" checked onchange="toggleNotification(this.checked)">
-          </div>
-        </div>
+  <div class="section">
+    <h2>設定</h2>
+    <div class="setting-item">
+      <span class="setting-label">サウンド効果</span>
+      <input type="checkbox" id="sound-enabled" checked onchange="toggleSound(this.checked)">
+    </div>
+    <div class="setting-item">
+      <span class="setting-label">通知を表示</span>
+      <input type="checkbox" id="notification-enabled" checked onchange="toggleNotification(this.checked)">
+    </div>
+  </div>
 
-        <div class="section">
-          <h2>使い方</h2>
-          <div class="info">
-            <p>📍 タスクトレイのアイコンを右クリックでメニューを表示</p>
-            <p>📍 「うるせぇ！を送信」ボタンで匿名メッセージを送信</p>
-            <p>📍 同じネットワーク内の他のユーザーに通知が届きます</p>
-            <p>📍 完全匿名なので送信者は特定できません</p>
-          </div>
-        </div>
+  <div class="section">
+    <h2>使い方</h2>
+    <div class="info">
+      <p>📍 タスクトレイのアイコンを右クリックでメニューを表示</p>
+      <p>📍 「うるせぇ！を送信」ボタンで匿名メッセージを送信</p>
+      <p>📍 同じネットワーク内の他のユーザーに通知が届きます</p>
+      <p>📍 完全匿名なので送信者は特定できません</p>
+    </div>
+  </div>
 
-        <div class="section">
-          <h2>診断情報</h2>
-          <div class="info">
-            <p>App Path: ${app.getAppPath()}</p>
-            <p>User Data: ${app.getPath('userData')}</p>
-            <p>__dirname: ${__dirname}</p>
-          </div>
-        </div>
+  <div class="section">
+    <h2>診断情報</h2>
+    <div class="info">
+      <p>App Path: ${appPath.replace(/\\/g, '\\\\')}</p>
+      <p>User Data: ${userData.replace(/\\/g, '\\\\')}</p>
+      <p>__dirname: ${dirname.replace(/\\/g, '\\\\')}</p>
+    </div>
+  </div>
 
-        <script>
-          // WebSocket接続
-          let ws = null;
-          let soundEnabled = true;
-          let notificationEnabled = true;
+  <script>
+    // WebSocket接続
+    let ws = null;
+    let soundEnabled = true;
+    let notificationEnabled = true;
 
-          function connectWebSocket() {
-            ws = new WebSocket('ws://localhost:5555');
+    function connectWebSocket() {
+      try {
+        ws = new WebSocket('ws://localhost:5555');
 
-            ws.onopen = () => {
-              console.log('Connected to WebSocket server');
-              document.getElementById('connection-status').textContent = 'WebSocketサーバー: 接続成功 ✓';
-              document.getElementById('connection-status').className = 'status-online';
-            };
+        ws.onopen = () => {
+          console.log('Connected to WebSocket server');
+          document.getElementById('connection-status').textContent = 'WebSocketサーバー: 接続成功 ✓';
+          document.getElementById('connection-status').className = 'status-online';
+        };
 
-            ws.onclose = () => {
-              console.log('Disconnected from WebSocket server');
-              document.getElementById('connection-status').textContent = 'WebSocketサーバー: 切断されました';
-              document.getElementById('connection-status').className = 'status-offline';
-              // 再接続を試みる
-              setTimeout(connectWebSocket, 3000);
-            };
+        ws.onclose = () => {
+          console.log('Disconnected from WebSocket server');
+          document.getElementById('connection-status').textContent = 'WebSocketサーバー: 切断されました';
+          document.getElementById('connection-status').className = 'status-offline';
+          // 再接続を試みる
+          setTimeout(connectWebSocket, 3000);
+        };
 
-            ws.onerror = (error) => {
-              console.error('WebSocket error:', error);
-              document.getElementById('connection-status').textContent = 'WebSocketサーバー: エラー';
-              document.getElementById('connection-status').className = 'status-offline';
-            };
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          document.getElementById('connection-status').textContent = 'WebSocketサーバー: エラー';
+          document.getElementById('connection-status').className = 'status-offline';
+        };
 
-            ws.onmessage = (event) => {
-              console.log('Received message:', event.data);
-              if (notificationEnabled && window.electronAPI) {
-                window.electronAPI.showNotification(event.data);
-              }
-            };
+        ws.onmessage = (event) => {
+          console.log('Received message:', event.data);
+          if (notificationEnabled && window.electronAPI) {
+            window.electronAPI.showNotification(event.data);
           }
+        };
+      } catch (error) {
+        console.error('Failed to connect WebSocket:', error);
+        document.getElementById('connection-status').textContent = 'WebSocketサーバー: 接続失敗';
+        document.getElementById('connection-status').className = 'status-offline';
+      }
+    }
 
-          function sendMessage() {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-              ws.send('うるせぇ！');
-              alert('送信しました！');
-            } else {
-              alert('WebSocketサーバーに接続していません');
-            }
-          }
+    function sendMessage() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send('うるせぇ！');
+        alert('送信しました！');
+      } else {
+        alert('WebSocketサーバーに接続していません');
+      }
+    }
 
-          function toggleSound(enabled) {
-            soundEnabled = enabled;
-            console.log('Sound:', enabled);
-          }
+    function toggleSound(enabled) {
+      soundEnabled = enabled;
+      console.log('Sound:', enabled);
+    }
 
-          function toggleNotification(enabled) {
-            notificationEnabled = enabled;
-            console.log('Notification:', enabled);
-          }
+    function toggleNotification(enabled) {
+      notificationEnabled = enabled;
+      console.log('Notification:', enabled);
+    }
 
-          // 起動時にWebSocketに接続
-          connectWebSocket();
-        </script>
-      </body>
-      </html>
-    `;
+    // 起動時にWebSocketに接続
+    connectWebSocket();
+  </script>
+</body>
+</html>`;
 
     settingsWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(simpleSettingsHTML)}`);
 
+    settingsWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+      console.error('Settings window failed to load:', errorCode, errorDescription);
+      writeErrorLog(new Error(`Settings window load failed: ${errorCode} - ${errorDescription}`));
+    });
+
     settingsWindow.on('closed', () => {
       settingsWindow = null;
+      console.log('Settings window closed');
     });
 
   } catch (error) {
     console.error('Failed to create settings window:', error);
     writeErrorLog(error);
 
-    dialog.showErrorBox(
-      'UruseeNotifier - 設定ウィンドウエラー',
-      `設定ウィンドウの作成に失敗しました:\n\n${error.message}\n\nログファイル: ${path.join(app.getPath('userData'), 'error.log')}`
-    );
+    // エラーが発生しても、エラーダイアログを表示してから変数をクリア
+    dialog.showMessageBox({
+      type: 'error',
+      title: 'UruseeNotifier - 設定ウィンドウエラー',
+      message: '設定ウィンドウの作成に失敗しました',
+      detail: `エラー: ${error.message}\n\nログファイル: ${path.join(app.getPath('userData'), 'error.log')}`,
+      buttons: ['OK']
+    });
+
+    // ウィンドウが作成されていたら破棄
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.destroy();
+    }
+    settingsWindow = null;
   }
 }
 

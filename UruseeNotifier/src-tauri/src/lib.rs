@@ -39,11 +39,14 @@ pub fn run() {
         UdpHandler::new().expect("Failed to initialize UDP handler")
     ));
 
+    // setup クロージャ用にクローン
+    let udp_handler_for_setup = udp_handler.clone();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(move |app| {
             // UDP リスナーを起動
-            let handler_clone = udp_handler.clone();
+            let handler_clone = udp_handler_for_setup.clone();
             UdpHandler::start_listener(app.handle().clone(), handler_clone)
                 .expect("Failed to start UDP listener");
             Ok(())

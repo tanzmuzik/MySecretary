@@ -15,9 +15,9 @@
         "title": "うるせぇ通知",
         "width": 400,
         "height": 600,
-        "visible": false,
+        "visible": true,
         "decorations": true,
-        "resizable": false,
+        "resizable": true,
         "skipTaskbar": false
       }
     ],

@@ -24,7 +24,11 @@ pub struct UdpHandler {
 impl UdpHandler {
     pub fn new() -> Result<Self> {
         let machine_id = uuid::Uuid::new_v4().to_string();
-        let broadcast_addr = Self::get_broadcast_address()?;
+        let broadcast_addr = Self::get_broadcast_address().unwrap_or_else(|e| {
+            eprintln!("Warning: Failed to get local IP: {}", e);
+            eprintln!("Using default broadcast address 255.255.255.255");
+            Ipv4Addr::new(255, 255, 255, 255)
+        });
 
         Ok(Self {
             machine_id,
@@ -41,9 +45,11 @@ impl UdpHandler {
             // サブネットマスク 255.255.255.0 を想定してブロードキャストアドレスを計算
             let octets = ipv4.octets();
             let broadcast = Ipv4Addr::new(octets[0], octets[1], octets[2], 255);
+            println!("Detected local IP: {}, using broadcast: {}", ipv4, broadcast);
             Ok(broadcast)
         } else {
             // IPv6 の場合はデフォルトで 255.255.255.255 を使用
+            println!("IPv6 detected, using default broadcast address");
             Ok(Ipv4Addr::new(255, 255, 255, 255))
         }
     }

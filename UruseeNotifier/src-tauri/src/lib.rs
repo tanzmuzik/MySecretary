@@ -36,7 +36,10 @@ fn get_connection_status(state: tauri::State<AppState>) -> Result<ConnectionStat
 pub fn run() {
     // UDP ハンドラーを初期化
     let udp_handler = Arc::new(Mutex::new(
-        UdpHandler::new().expect("Failed to initialize UDP handler")
+        UdpHandler::new().unwrap_or_else(|e| {
+            eprintln!("Error initializing UDP handler: {}", e);
+            panic!("Cannot initialize UDP handler: {}", e);
+        })
     ));
 
     // setup クロージャ用にクローン
@@ -47,8 +50,14 @@ pub fn run() {
         .setup(move |app| {
             // UDP リスナーを起動
             let handler_clone = udp_handler_for_setup.clone();
-            UdpHandler::start_listener(app.handle().clone(), handler_clone)
-                .expect("Failed to start UDP listener");
+            match UdpHandler::start_listener(app.handle().clone(), handler_clone) {
+                Ok(_) => println!("UDP listener started successfully"),
+                Err(e) => {
+                    eprintln!("Warning: Failed to start UDP listener: {}", e);
+                    eprintln!("The app will continue to run, but UDP features may not work.");
+                    eprintln!("Please check if port 5555 is available and firewall settings.");
+                }
+            }
             Ok(())
         })
         .manage(AppState {

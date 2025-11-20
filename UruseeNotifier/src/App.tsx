@@ -61,8 +61,12 @@ function App() {
       lastReceivedTimestampRef.current = event.payload.timestamp;
 
       showBubble();
-      // ref を使って最新の soundEnabled の値を取得
-      if (soundEnabledRef.current) {
+
+      // 自分のマシンからのメッセージかチェック
+      const isOwnMessage = status && event.payload.machine_id === status.machine_id;
+
+      // 自分のメッセージでない場合のみ受信音を鳴らす（自分のメッセージは送信音で既に鳴っている）
+      if (!isOwnMessage && soundEnabledRef.current) {
         playReceiveSound();
       }
     });

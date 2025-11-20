@@ -26,6 +26,9 @@ function App() {
   // soundEnabled の最新の値を参照できるようにする
   const soundEnabledRef = useRef(soundEnabled);
 
+  // 最後に受信したメッセージのタイムスタンプを記録（重複防止）
+  const lastReceivedTimestampRef = useRef<number>(0);
+
   // soundEnabled が変更されたら ref も更新
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;
@@ -49,6 +52,14 @@ function App() {
     // UDP メッセージ受信イベントをリスン
     await listen<UruseeMessage>("uresee-received", (event) => {
       console.log("Received uresee:", event.payload);
+
+      // 同じタイムスタンプのメッセージは無視（重複防止）
+      if (event.payload.timestamp === lastReceivedTimestampRef.current) {
+        console.log("⚠️ Duplicate message ignored");
+        return;
+      }
+      lastReceivedTimestampRef.current = event.payload.timestamp;
+
       showBubble();
       // ref を使って最新の soundEnabled の値を取得
       if (soundEnabledRef.current) {

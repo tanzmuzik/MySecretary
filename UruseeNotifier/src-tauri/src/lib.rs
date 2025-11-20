@@ -1,6 +1,7 @@
 mod udp_handler;
 
 use std::sync::{Arc, Mutex};
+use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 use udp_handler::UdpHandler;
 
 #[derive(Clone, serde::Serialize)]
@@ -30,6 +31,41 @@ fn get_connection_status(state: tauri::State<AppState>) -> Result<ConnectionStat
         broadcast_addr: handler.get_broadcast_addr().to_string(),
         machine_id: handler.get_machine_id().to_string(),
     })
+}
+
+#[tauri::command]
+async fn show_bubble(app: tauri::AppHandle, text: String, emoji: String, x: i32, y: i32) -> Result<(), String> {
+    let label = format!("bubble-{}", chrono::Utc::now().timestamp_millis());
+
+    // 透過ウィンドウを作成
+    let window = WebviewWindowBuilder::new(
+        &app,
+        label.clone(),
+        WebviewUrl::App(format!("bubble.html?text={}&emoji={}",
+            urlencoding::encode(&text),
+            urlencoding::encode(&emoji)
+        ).into())
+    )
+    .title("")
+    .inner_size(250.0, 100.0)
+    .position(x as f64, y as f64)
+    .decorations(false)
+    .transparent(true)
+    .always_on_top(true)
+    .skip_taskbar(true)
+    .resizable(false)
+    .focused(false)
+    .build()
+    .map_err(|e| e.to_string())?;
+
+    // 3秒後にウィンドウを閉じる
+    let window_clone = window.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_secs(3));
+        let _ = window_clone.close();
+    });
+
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -63,7 +99,7 @@ pub fn run() {
         .manage(AppState {
             udp_handler: udp_handler.clone(),
         })
-        .invoke_handler(tauri::generate_handler![send_uresee, get_connection_status])
+        .invoke_handler(tauri::generate_handler![send_uresee, get_connection_status, show_bubble])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

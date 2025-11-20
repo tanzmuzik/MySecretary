@@ -27,45 +27,6 @@
   overflow: hidden;
 }
 
-/* 吹き出しスタイル */
-.bubble {
-  position: fixed;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
-  color: white;
-  padding: 20px 30px;
-  border-radius: 25px;
-  font-size: 28px;
-  font-weight: bold;
-  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
-  animation: bubble-appear 0.3s ease-out, bubble-shake 0.5s ease-in-out infinite;
-  z-index: 1000;
-  pointer-events: none;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes bubble-appear {
-  from {
-    transform: scale(0);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes bubble-shake {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(-5deg);
-  }
-  75% {
-    transform: rotate(5deg);
-  }
-}
-
 /* メインコンテナ */
 .main-container {
   width: 100%;

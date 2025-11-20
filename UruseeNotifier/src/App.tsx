@@ -15,20 +15,12 @@ interface ConnectionStatus {
   machine_id: string;
 }
 
-interface BubbleMessage {
-  id: string;
-  text: string;
-  x: number;
-  y: number;
-}
-
 const EMOJIS = ["💢", "🔔", "😤", "🗣️", "💔"];
 
 function App() {
   const [status, setStatus] = useState<ConnectionStatus | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [sendCount, setSendCount] = useState(0);
-  const [bubbles, setBubbles] = useState<BubbleMessage[]>([]);
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
@@ -69,21 +61,28 @@ function App() {
     }
   };
 
-  const showBubble = () => {
+  const showBubble = async () => {
     const randomEmoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-    const bubble: BubbleMessage = {
-      id: Date.now().toString(),
-      text: `うるせぇ！ ${randomEmoji}`,
-      x: Math.random() * (window.innerWidth - 200),
-      y: Math.random() * (window.innerHeight - 100),
-    };
 
-    setBubbles((prev) => [...prev, bubble]);
+    // スクリーン全体のサイズを取得（デスクトップ全体）
+    const screenWidth = window.screen.width;
+    const screenHeight = window.screen.height;
 
-    // 3秒後に吹き出しを削除
-    setTimeout(() => {
-      setBubbles((prev) => prev.filter((b) => b.id !== bubble.id));
-    }, 3000);
+    // ランダムな位置を計算
+    const x = Math.floor(Math.random() * (screenWidth - 300));
+    const y = Math.floor(Math.random() * (screenHeight - 150));
+
+    try {
+      // Rust 側で透過ウィンドウを作成
+      await invoke("show_bubble", {
+        text: "うるせぇ！",
+        emoji: randomEmoji,
+        x: x,
+        y: y
+      });
+    } catch (error) {
+      console.error("Failed to show bubble:", error);
+    }
   };
 
   const playSendSound = () => {
@@ -132,20 +131,6 @@ function App() {
 
   return (
     <div className="app">
-      {/* 吹き出し表示 */}
-      {bubbles.map((bubble) => (
-        <div
-          key={bubble.id}
-          className="bubble"
-          style={{
-            left: `${bubble.x}px`,
-            top: `${bubble.y}px`,
-          }}
-        >
-          {bubble.text}
-        </div>
-      ))}
-
       {/* メインコントロール */}
       <div className="main-container">
         <h1>🔔 うるせぇ通知</h1>

@@ -89,6 +89,13 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                println!("Close requested - hiding window instead of quitting");
+                let _ = window.hide();
+                api.prevent_close();
+            }
+        })
         .setup(move |app| {
             // UDP リスナーを起動
             let handler_clone = udp_handler_for_setup.clone();
@@ -140,23 +147,6 @@ pub fn run() {
                     }
                 })
                 .build(app)?;
-
-            // メインウィンドウの閉じるボタンの動作を変更（最小化するだけで終了しない）
-            if let Some(window) = app.get_webview_window("main") {
-                println!("Setting up window close handler");
-                let window_clone = window.clone();
-                window.on_window_event(move |event| {
-                    println!("Window event received: {:?}", event);
-                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                        println!("Close requested - hiding window instead");
-                        // ウィンドウを閉じる代わりに隠す
-                        let _ = window_clone.hide();
-                        api.prevent_close();
-                    }
-                });
-            } else {
-                println!("Warning: Main window not found!");
-            }
 
             Ok(())
         })

@@ -2,8 +2,8 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket};
 use std::sync::{Arc, Mutex};
+use std::thread;
 use tauri::{AppHandle, Emitter};
-use tokio::task;
 
 const UDP_PORT: u16 = 5555;
 const BUFFER_SIZE: usize = 1024;
@@ -87,8 +87,8 @@ impl UdpHandler {
 
         println!("UDP listener started on port {}", UDP_PORT);
 
-        // 非同期タスクでリスナーを起動
-        task::spawn_blocking(move || {
+        // 別スレッドでリスナーを起動
+        thread::spawn(move || {
             let mut buf = [0u8; BUFFER_SIZE];
 
             loop {

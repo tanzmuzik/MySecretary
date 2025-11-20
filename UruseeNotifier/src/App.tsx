@@ -96,6 +96,7 @@ function App() {
   };
 
   const playSendSound = () => {
+    console.log("🔊 playSendSound called");
     // 簡易的なビープ音（実際には音声ファイルを使用）
     const audioContext = new AudioContext();
     const oscillator = audioContext.createOscillator();
@@ -118,6 +119,7 @@ function App() {
   };
 
   const playReceiveSound = () => {
+    console.log("🔊 playReceiveSound called");
     // 3回のビープ音
     const audioContext = new AudioContext();
     for (let i = 0; i < 3; i++) {
@@ -177,7 +179,10 @@ function App() {
                 <input
                   type="checkbox"
                   checked={soundEnabled}
-                  onChange={(e) => setSoundEnabled(e.target.checked)}
+                  onChange={(e) => {
+                    console.log("🔧 Sound toggle changed:", e.target.checked);
+                    setSoundEnabled(e.target.checked);
+                  }}
                 />
                 効果音を有効にする
               </label>

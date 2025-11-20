@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>うるさいよね！？通知 - オフィス向けLAN通知アプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 3px solid #ff6b6b;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .download-section {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+
+        .download-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background-color: white;
+            color: #ff6b6b;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .download-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .version-info {
+            color: white;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        section {
+            margin: 40px 0;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: #ff6b6b;
+            border-left: 5px solid #ff6b6b;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            color: #555;
+            margin: 20px 0 10px 0;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #fff5f5;
+            border-left: 4px solid #ff6b6b;
+            border-radius: 5px;
+        }
+
+        .feature-list li strong {
+            color: #ff6b6b;
+            font-size: 1.1em;
+        }
+
+        .requirements {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .requirements ul {
+            margin-left: 20px;
+        }
+
+        .requirements li {
+            margin: 8px 0;
+        }
+
+        .usage-steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding: 0;
+        }
+
+        .usage-steps li {
+            counter-increment: step-counter;
+            padding: 15px 15px 15px 50px;
+            margin: 15px 0;
+            background-color: #fff5f5;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .usage-steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            background-color: #ff6b6b;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .note {
+            background-color: #fffaf0;
+            border: 1px solid #ffd700;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .note strong {
+            color: #ff8c00;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            border-top: 2px solid #eee;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔔 うるさいよね！？通知</h1>
+            <p class="subtitle">オフィスの騒音を共有するLAN通知アプリ</p>
+        </header>
+
+        <div class="download-section">
+            <a href="#" class="download-button">📥 ダウンロード (Windows版)</a>
+            <p class="version-info">最新版: v1.0.0 | ファイルサイズ: 約5MB</p>
+        </div>
+
+        <section>
+            <h2>🎯 概要</h2>
+            <p>
+                「うるさいよね！？通知」は、オフィスやチーム内で騒音が気になったときに、
+                ワンクリックで同じネットワーク上のメンバーに通知を送れる軽量デスクトップアプリです。
+                直接注意するのは気まずい…そんな時に、さりげなく気持ちを伝えられます。
+            </p>
+        </section>
+
+        <section>
+            <h2>✨ 主な機能</h2>
+            <ul class="feature-list">
+                <li>
+                    <strong>ワンクリック送信</strong><br>
+                    ボタン1つで「うるさいよね！？」メッセージを同じLAN内の全員に送信
+                </li>
+                <li>
+                    <strong>デスクトップ通知</strong><br>
+                    画面全体のランダムな位置に吹き出しが表示され、誰でも気づきやすい
+                </li>
+                <li>
+                    <strong>システムトレイ常駐</strong><br>
+                    タスクトレイに常駐し、アイコンクリックですぐに送信可能
+                </li>
+                <li>
+                    <strong>効果音機能</strong><br>
+                    送信時・受信時に効果音が鳴り、ON/OFF切り替え可能
+                </li>
+                <li>
+                    <strong>匿名送信</strong><br>
+                    誰が送ったかは表示されないので、気軽に使える
+                </li>
+                <li>
+                    <strong>設定不要</strong><br>
+                    起動するだけで自動的にネットワークを検出、面倒な設定は一切不要
+                </li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>💻 動作環境</h2>
+            <div class="requirements">
+                <h3>対応OS</h3>
+                <ul>
+                    <li>Windows 10 (64bit) 以降</li>
+                    <li>Windows 11</li>
+                </ul>
+
+                <h3>ネットワーク要件</h3>
+                <ul>
+                    <li>同じLAN（ローカルエリアネットワーク）に接続されていること</li>
+                    <li>UDPポート 5555 が使用可能であること</li>
+                    <li>ファイアウォールでUDPブロードキャストが許可されていること</li>
+                </ul>
+
+                <h3>その他</h3>
+                <ul>
+                    <li>インストール不要（実行ファイルを起動するだけ）</li>
+                    <li>インターネット接続は不要</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>📖 使い方</h2>
+            <ol class="usage-steps">
+                <li>
+                    ダウンロードした実行ファイル (.exe) をダブルクリックで起動
+                </li>
+                <li>
+                    アプリが自動的にネットワークを検出し、準備完了
+                </li>
+                <li>
+                    「うるさいよね！？を送信」ボタンをクリックするか、タスクトレイアイコンを左クリック
+                </li>
+                <li>
+                    同じネットワーク上の全てのPCに通知が表示されます
+                </li>
+            </ol>
+
+            <div class="note">
+                <strong><span class="emoji">💡</span> ヒント:</strong>
+                <ul>
+                    <li>×ボタンを押すとウィンドウが非表示になり、タスクトレイに常駐します</li>
+                    <li>タスクトレイアイコンを右クリック → 「設定を開く」で再びウィンドウを表示</li>
+                    <li>効果音は設定パネルから ON/OFF 切り替え可能</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>🔒 プライバシーとセキュリティ</h2>
+            <ul class="feature-list">
+                <li>
+                    <strong>完全ローカル動作</strong><br>
+                    インターネットへの通信は一切行いません
+                </li>
+                <li>
+                    <strong>データ収集なし</strong><br>
+                    個人情報や使用統計の収集は行いません
+                </li>
+                <li>
+                    <strong>オープンソース</strong><br>
+                    ソースコードは GitHub で公開されています
+                </li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>❓ FAQ（よくある質問）</h2>
+
+            <h3>Q: インストールは必要ですか？</h3>
+            <p>A: いいえ、実行ファイルをダブルクリックするだけで使えます。</p>
+
+            <h3>Q: 他のネットワークの人にも届きますか？</h3>
+            <p>A: いいえ、同じLAN内のPCにのみ届きます。インターネット越しには届きません。</p>
+
+            <h3>Q: 誰が送ったかわかりますか？</h3>
+            <p>A: いいえ、送信者は表示されません。匿名で使えます。</p>
+
+            <h3>Q: ファイアウォールの設定は必要ですか？</h3>
+            <p>A: 初回起動時にWindowsファイアウォールの許可ダイアログが表示される場合があります。「アクセスを許可する」を選択してください。</p>
+
+            <h3>Q: 複数のPCで同時に使えますか？</h3>
+            <p>A: はい、同じネットワーク上で何台でも同時に使用できます。</p>
+        </section>
+
+        <section>
+            <h2>🛠️ 技術情報</h2>
+            <ul>
+                <li><strong>フレームワーク:</strong> Tauri 2.0</li>
+                <li><strong>言語:</strong> Rust + TypeScript + React</li>
+                <li><strong>通信方式:</strong> UDP ブロードキャスト (ポート 5555)</li>
+                <li><strong>ライセンス:</strong> MIT License</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>&copy; 2025 うるさいよね！？通知プロジェクト</p>
+            <p>Made with ❤️ for peaceful offices</p>
+        </footer>
+    </div>
+</body>
+</html>

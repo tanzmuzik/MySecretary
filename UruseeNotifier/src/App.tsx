@@ -96,7 +96,7 @@ function App() {
     try {
       // Rust 側で透過ウィンドウを作成
       await invoke("show_bubble", {
-        text: "うるせぇ！",
+        text: "うるさいよね！？",
         emoji: randomEmoji,
         x: x,
         y: y
@@ -152,10 +152,10 @@ function App() {
     <div className="app">
       {/* メインコントロール */}
       <div className="main-container">
-        <h1>🔔 うるせぇ通知</h1>
+        <h1>🔔 うるさいよね！？通知</h1>
 
         <button className="uresee-button" onClick={sendUresee}>
-          うるせぇ！を送信
+          うるさいよね！？を送信
         </button>
 
         <button className="settings-button" onClick={() => setShowSettings(!showSettings)}>

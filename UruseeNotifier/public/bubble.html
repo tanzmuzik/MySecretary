@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>うるせぇ！</title>
+    <title>うるさいよね！？</title>
     <style>
         * {
             margin: 0;
@@ -60,12 +60,12 @@
     </style>
 </head>
 <body>
-    <div class="bubble" id="bubble">うるせぇ！</div>
+    <div class="bubble" id="bubble">うるさいよね！？</div>
 
     <script>
         // URL パラメータから吹き出しテキストと絵文字を取得
         const params = new URLSearchParams(window.location.search);
-        const text = params.get('text') || 'うるせぇ！';
+        const text = params.get('text') || 'うるさいよね！？';
         const emoji = params.get('emoji') || '💢';
 
         document.getElementById('bubble').textContent = `${text} ${emoji}`;

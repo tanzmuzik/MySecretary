@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>うるさいよね！？</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            overflow: hidden;
+            font-family: "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif;
+        }
+
+        .bubble {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 25px;
+            font-size: 28px;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
+            animation: bubble-appear 0.3s ease-out, bubble-shake 0.5s ease-in-out infinite;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+
+        @keyframes bubble-appear {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes bubble-shake {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(-5deg);
+            }
+            75% {
+                transform: rotate(5deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bubble" id="bubble">うるさいよね！？</div>
+
+    <script>
+        // URL パラメータから吹き出しテキストと絵文字を取得
+        const params = new URLSearchParams(window.location.search);
+        const text = params.get('text') || 'うるさいよね！？';
+        const emoji = params.get('emoji') || '💢';
+
+        document.getElementById('bubble').textContent = `${text} ${emoji}`;
+    </script>
+</body>
+</html>

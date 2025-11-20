@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import "./App.css";
@@ -23,6 +23,14 @@ function App() {
   const [sendCount, setSendCount] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
 
+  // soundEnabled の最新の値を参照できるようにする
+  const soundEnabledRef = useRef(soundEnabled);
+
+  // soundEnabled が変更されたら ref も更新
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
+
   useEffect(() => {
     loadConnectionStatus();
     setupEventListeners();
@@ -42,7 +50,8 @@ function App() {
     await listen<UruseeMessage>("uresee-received", (event) => {
       console.log("Received uresee:", event.payload);
       showBubble();
-      if (soundEnabled) {
+      // ref を使って最新の soundEnabled の値を取得
+      if (soundEnabledRef.current) {
         playReceiveSound();
       }
     });
@@ -52,7 +61,8 @@ function App() {
     try {
       await invoke("send_uresee");
       setSendCount((prev) => prev + 1);
-      if (soundEnabled) {
+      // ref を使って最新の soundEnabled の値を取得
+      if (soundEnabledRef.current) {
         playSendSound();
       }
       console.log("Uresee sent!");

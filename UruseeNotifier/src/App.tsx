@@ -51,11 +51,8 @@ function App() {
   const setupEventListeners = async () => {
     // UDP メッセージ受信イベントをリスン
     await listen<UruseeMessage>("uresee-received", (event) => {
-      console.log("Received uresee:", event.payload);
-
       // 同じタイムスタンプのメッセージは無視（重複防止）
       if (event.payload.timestamp === lastReceivedTimestampRef.current) {
-        console.log("⚠️ Duplicate message ignored");
         return;
       }
       lastReceivedTimestampRef.current = event.payload.timestamp;
@@ -80,7 +77,6 @@ function App() {
       if (soundEnabledRef.current) {
         playSendSound();
       }
-      console.log("Uresee sent!");
     } catch (error) {
       console.error("Failed to send uresee:", error);
     }
@@ -111,8 +107,6 @@ function App() {
   };
 
   const playSendSound = () => {
-    console.log("🔊 playSendSound called");
-    // 簡易的なビープ音（実際には音声ファイルを使用）
     const audioContext = new AudioContext();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -134,8 +128,6 @@ function App() {
   };
 
   const playReceiveSound = () => {
-    console.log("🔊 playReceiveSound called");
-    // 3回のビープ音
     const audioContext = new AudioContext();
     for (let i = 0; i < 3; i++) {
       const oscillator = audioContext.createOscillator();
@@ -194,10 +186,7 @@ function App() {
                 <input
                   type="checkbox"
                   checked={soundEnabled}
-                  onChange={(e) => {
-                    console.log("🔧 Sound toggle changed:", e.target.checked);
-                    setSoundEnabled(e.target.checked);
-                  }}
+                  onChange={(e) => setSoundEnabled(e.target.checked)}
                 />
                 効果音を有効にする
               </label>

@@ -1,7 +1,11 @@
 mod udp_handler;
 
 use std::sync::{Arc, Mutex};
-use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{
+    menu::{Menu, MenuItem},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    Manager, WebviewUrl, WebviewWindowBuilder,
+};
 use udp_handler::UdpHandler;
 
 #[derive(Clone, serde::Serialize)]
@@ -80,9 +84,11 @@ pub fn run() {
 
     // setup クロージャ用にクローン
     let udp_handler_for_setup = udp_handler.clone();
+    let udp_handler_for_tray = udp_handler.clone();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_shell::init())
         .setup(move |app| {
             // UDP リスナーを起動
             let handler_clone = udp_handler_for_setup.clone();
@@ -94,6 +100,59 @@ pub fn run() {
                     eprintln!("Please check if port 5555 is available and firewall settings.");
                 }
             }
+
+            // トレイメニューを作成
+            let show_item = MenuItem::with_id(app, "show", "設定を開く", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "終了", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
+
+            // トレイアイコンを作成
+            let _tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .menu(&menu)
+                .menu_on_left_click(false)
+                .on_menu_event(move |app, event| match event.id.as_ref() {
+                    "show" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {}
+                })
+                .on_tray_icon_event(move |tray, event| {
+                    // 左クリックで「うるせぇ！」を送信
+                    if let TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } = event
+                    {
+                        println!("Tray icon clicked - sending uresee!");
+                        if let Ok(handler) = udp_handler_for_tray.lock() {
+                            if let Err(e) = handler.send_uresee() {
+                                eprintln!("Failed to send uresee from tray: {}", e);
+                            }
+                        }
+                    }
+                })
+                .build(app)?;
+
+            // メインウィンドウの閉じるボタンの動作を変更（最小化するだけで終了しない）
+            if let Some(window) = app.get_webview_window("main") {
+                let window_clone = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        // ウィンドウを閉じる代わりに隠す
+                        let _ = window_clone.hide();
+                        api.prevent_close();
+                    }
+                });
+            }
+
             Ok(())
         })
         .manage(AppState {

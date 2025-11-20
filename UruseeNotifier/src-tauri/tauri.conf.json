@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "うるせぇ通知",
         "width": 400,
         "height": 600,
@@ -23,11 +24,6 @@
     ],
     "security": {
       "csp": null
-    },
-    "trayIcon": {
-      "id": "main",
-      "iconPath": "icons/icon.png",
-      "tooltip": "UruseeNotifier"
     }
   },
   "bundle": {

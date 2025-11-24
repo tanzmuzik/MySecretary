@@ -1,6 +1,6 @@
 # MySecretary
 
-A task management application with Microsoft Teams integration built with React and Node.js, plus a desktop analog clock widget for Windows 11.
+A task management application with Microsoft Teams integration built with React and Node.js, plus desktop widgets (analog clock and monthly calendar) for Windows 11.
 
 ## Features
 
@@ -16,6 +16,14 @@ A task management application with Microsoft Teams integration built with React 
 - **Draggable**: Position anywhere on your desktop
 - **Theme Support**: Switch between transparent, light, and dark themes
 - **Smooth Animation**: Fluid second hand movement
+
+### Monthly Calendar Widget
+- **月めくりカレンダー**: Monthly calendar with transparent background
+- **Monday Start**: Week starts on Monday (Japanese standard)
+- **Today Highlight**: Current date highlighted with color and animation
+- **Navigation**: Easy month navigation with arrow buttons
+- **Theme Support**: Switch between transparent and light themes
+- **Auto Update**: Automatically updates at midnight
 
 ## Project Structure
 
@@ -35,6 +43,13 @@ MySecretary/
 │   ├── index.html   # Clock UI
 │   ├── style.css    # Styling with transparency
 │   ├── clock.js     # Clock logic
+│   ├── package.json # Widget dependencies
+│   └── README.md    # Widget documentation
+├── calendar-widget/ # Windows 11 Monthly Calendar Widget (Electron)
+│   ├── main.js      # Electron main process
+│   ├── index.html   # Calendar UI
+│   ├── style.css    # Styling with transparency
+│   ├── calendar.js  # Calendar logic (Monday start)
 │   ├── package.json # Widget dependencies
 │   └── README.md    # Widget documentation
 └── README.md        # This file
@@ -117,6 +132,28 @@ MySecretary/
 
 For detailed clock widget documentation, see [clock-widget/README.md](clock-widget/README.md)
 
+### Running the Calendar Widget
+
+1. **Install calendar widget dependencies:**
+   ```bash
+   cd calendar-widget
+   npm install
+   ```
+
+2. **Start the calendar widget:**
+   ```bash
+   npm start
+   ```
+
+3. **Build Windows executable (optional):**
+   ```bash
+   npm run build:win
+   ```
+
+For detailed calendar widget documentation, see [calendar-widget/README.md](calendar-widget/README.md)
+
+**Note**: You can run both clock and calendar widgets simultaneously!
+
 ## API Endpoints
 
 - `GET /` - API information and available endpoints
@@ -129,7 +166,8 @@ For detailed clock widget documentation, see [clock-widget/README.md](clock-widg
 - **Frontend**: React 18, TypeScript, CSS3
 - **Backend**: Node.js, Express.js
 - **Microsoft Integration**: Microsoft Graph API, MSAL (Microsoft Authentication Library)
-- **Development**: nodemon, React Scripts
+- **Desktop Widgets**: Electron, HTML5, CSS3, JavaScript
+- **Development**: nodemon, React Scripts, electron-builder
 
 ## Development
 

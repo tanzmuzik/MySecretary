@@ -1,0 +1,208 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 300px;
+  height: 350px;
+  overflow: hidden;
+  background: transparent;
+  -webkit-app-region: drag;
+  font-family: 'Segoe UI', 'Yu Gothic UI', 'Meiryo UI', sans-serif;
+}
+
+.calendar-container {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Calendar Header */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  -webkit-app-region: no-drag;
+}
+
+.month-year {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.nav-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  -webkit-app-region: no-drag;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.nav-btn:active {
+  transform: scale(0.95);
+}
+
+/* Weekdays Header */
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 4px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.weekday.weekend {
+  color: rgba(255, 150, 150, 0.9);
+}
+
+/* Calendar Grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  flex: 1;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  -webkit-app-region: no-drag;
+}
+
+.calendar-day:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+/* Other month days */
+.calendar-day.other-month {
+  color: rgba(255, 255, 255, 0.3);
+  background: transparent;
+}
+
+/* Weekend days */
+.calendar-day.weekend {
+  color: rgba(255, 180, 180, 0.9);
+}
+
+/* Today's date */
+.calendar-day.today {
+  background: rgba(100, 150, 255, 0.6);
+  border: 2px solid rgba(150, 200, 255, 0.8);
+  color: rgba(255, 255, 255, 1);
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(100, 150, 255, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(100, 150, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(100, 150, 255, 0.6);
+  }
+}
+
+/* Selected date */
+.calendar-day.selected {
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Light Theme */
+body.light-theme .calendar-container {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .month-year {
+  color: rgba(0, 0, 0, 0.9);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+body.light-theme .nav-btn {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+body.light-theme .nav-btn:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+body.light-theme .weekday {
+  color: rgba(0, 0, 0, 0.7);
+  text-shadow: none;
+}
+
+body.light-theme .weekday.weekend {
+  color: rgba(255, 50, 50, 0.8);
+}
+
+body.light-theme .calendar-day {
+  color: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.light-theme .calendar-day:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .calendar-day.other-month {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+body.light-theme .calendar-day.weekend {
+  color: rgba(255, 50, 50, 0.8);
+}
+
+body.light-theme .calendar-day.today {
+  background: rgba(100, 150, 255, 0.8);
+  border: 2px solid rgba(80, 120, 255, 0.9);
+  color: rgba(255, 255, 255, 1);
+}

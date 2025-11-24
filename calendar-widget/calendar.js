@@ -218,12 +218,16 @@ function createDayElement(day, isOtherMonth, dayIndex, isToday = false, date = n
 
 // Navigation buttons
 prevMonthBtn.addEventListener('click', () => {
-  currentDate.setMonth(currentDate.getMonth() - 1);
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  currentDate = new Date(year, month - 1, 1);
   renderCalendar();
 });
 
 nextMonthBtn.addEventListener('click', () => {
-  currentDate.setMonth(currentDate.getMonth() + 1);
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  currentDate = new Date(year, month + 1, 1);
   renderCalendar();
 });
 

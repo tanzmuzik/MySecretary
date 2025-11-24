@@ -15,6 +15,81 @@ const monthNames = [
   '7月', '8月', '9月', '10月', '11月', '12月'
 ];
 
+// Japanese National Holidays (2024-2026)
+const holidays = {
+  2024: [
+    { month: 0, day: 1, name: '元日' },
+    { month: 0, day: 8, name: '成人の日' },
+    { month: 1, day: 11, name: '建国記念の日' },
+    { month: 1, day: 12, name: '振替休日' },
+    { month: 1, day: 23, name: '天皇誕生日' },
+    { month: 2, day: 20, name: '春分の日' },
+    { month: 3, day: 29, name: '昭和の日' },
+    { month: 4, day: 3, name: '憲法記念日' },
+    { month: 4, day: 4, name: 'みどりの日' },
+    { month: 4, day: 5, name: 'こどもの日' },
+    { month: 4, day: 6, name: '振替休日' },
+    { month: 6, day: 15, name: '海の日' },
+    { month: 7, day: 11, name: '山の日' },
+    { month: 7, day: 12, name: '振替休日' },
+    { month: 8, day: 16, name: '敬老の日' },
+    { month: 8, day: 22, name: '秋分の日' },
+    { month: 8, day: 23, name: '振替休日' },
+    { month: 9, day: 14, name: 'スポーツの日' },
+    { month: 10, day: 3, name: '文化の日' },
+    { month: 10, day: 4, name: '振替休日' },
+    { month: 10, day: 23, name: '勤労感謝の日' }
+  ],
+  2025: [
+    { month: 0, day: 1, name: '元日' },
+    { month: 0, day: 13, name: '成人の日' },
+    { month: 1, day: 11, name: '建国記念の日' },
+    { month: 1, day: 23, name: '天皇誕生日' },
+    { month: 1, day: 24, name: '振替休日' },
+    { month: 2, day: 20, name: '春分の日' },
+    { month: 3, day: 29, name: '昭和の日' },
+    { month: 4, day: 3, name: '憲法記念日' },
+    { month: 4, day: 4, name: 'みどりの日' },
+    { month: 4, day: 5, name: 'こどもの日' },
+    { month: 4, day: 6, name: '振替休日' },
+    { month: 6, day: 21, name: '海の日' },
+    { month: 7, day: 11, name: '山の日' },
+    { month: 8, day: 15, name: '敬老の日' },
+    { month: 8, day: 23, name: '秋分の日' },
+    { month: 9, day: 13, name: 'スポーツの日' },
+    { month: 10, day: 3, name: '文化の日' },
+    { month: 10, day: 23, name: '勤労感謝の日' },
+    { month: 10, day: 24, name: '振替休日' }
+  ],
+  2026: [
+    { month: 0, day: 1, name: '元日' },
+    { month: 0, day: 12, name: '成人の日' },
+    { month: 1, day: 11, name: '建国記念の日' },
+    { month: 1, day: 23, name: '天皇誕生日' },
+    { month: 2, day: 20, name: '春分の日' },
+    { month: 3, day: 29, name: '昭和の日' },
+    { month: 4, day: 3, name: '憲法記念日' },
+    { month: 4, day: 4, name: 'みどりの日' },
+    { month: 4, day: 5, name: 'こどもの日' },
+    { month: 4, day: 6, name: '振替休日' },
+    { month: 6, day: 20, name: '海の日' },
+    { month: 7, day: 11, name: '山の日' },
+    { month: 8, day: 21, name: '敬老の日' },
+    { month: 8, day: 22, name: '国民の休日' },
+    { month: 8, day: 23, name: '秋分の日' },
+    { month: 9, day: 12, name: 'スポーツの日' },
+    { month: 10, day: 3, name: '文化の日' },
+    { month: 10, day: 23, name: '勤労感謝の日' }
+  ]
+};
+
+// Function to check if a date is a holiday
+function isHoliday(year, month, day) {
+  if (!holidays[year]) return null;
+  const holiday = holidays[year].find(h => h.month === month && h.day === day);
+  return holiday ? holiday.name : null;
+}
+
 // Function to get the first day of the month (Monday = 0, Sunday = 6)
 function getFirstDayOfMonth(year, month) {
   const firstDay = new Date(year, month, 1).getDay();
@@ -71,8 +146,9 @@ function renderCalendar() {
     const isToday = isSameDay(date, today);
     const dayIndex = (firstDay + day - 1) % 7;
     const weekend = isWeekend(dayIndex);
+    const holidayName = isHoliday(year, month, day);
 
-    const dayElement = createDayElement(day, false, dayIndex, isToday, date, weekend);
+    const dayElement = createDayElement(day, false, dayIndex, isToday, date, weekend, holidayName);
     calendarGridElement.appendChild(dayElement);
   }
 
@@ -87,10 +163,15 @@ function renderCalendar() {
 }
 
 // Function to create a day element
-function createDayElement(day, isOtherMonth, dayIndex, isToday = false, date = null, weekend = false) {
+function createDayElement(day, isOtherMonth, dayIndex, isToday = false, date = null, weekend = false, holidayName = null) {
   const dayElement = document.createElement('div');
   dayElement.className = 'calendar-day';
-  dayElement.textContent = day;
+
+  // Create day number text
+  const dayNumber = document.createElement('span');
+  dayNumber.className = 'day-number';
+  dayNumber.textContent = day;
+  dayElement.appendChild(dayNumber);
 
   if (isOtherMonth) {
     dayElement.classList.add('other-month');
@@ -102,6 +183,18 @@ function createDayElement(day, isOtherMonth, dayIndex, isToday = false, date = n
 
   if (weekend && !isOtherMonth) {
     dayElement.classList.add('weekend');
+  }
+
+  // Add holiday styling and label
+  if (holidayName && !isOtherMonth) {
+    dayElement.classList.add('holiday');
+    dayElement.setAttribute('title', holidayName);
+
+    // Add holiday name as small text
+    const holidayLabel = document.createElement('span');
+    holidayLabel.className = 'holiday-name';
+    holidayLabel.textContent = holidayName;
+    dayElement.appendChild(holidayLabel);
   }
 
   // Add click event

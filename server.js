@@ -53,36 +53,42 @@ app.post('/api/tasks', async (req, res) => {
       return res.status(400).json({ error: 'Title is required' });
     }
 
+    const properties = {
+      Title: {
+        title: [
+          {
+            text: {
+              content: title
+            }
+          }
+        ]
+      },
+      Status: {
+        status: {
+          name: status
+        }
+      },
+      Priority: {
+        select: {
+          name: priority
+        }
+      }
+    };
+
+    // Only add Due Date if provided
+    if (dueDate) {
+      properties['Due Date'] = {
+        date: {
+          start: dueDate
+        }
+      };
+    }
+
     const response = await notion.pages.create({
       parent: {
         database_id: DATABASE_ID
       },
-      properties: {
-        Title: {
-          title: [
-            {
-              text: {
-                content: title
-              }
-            }
-          ]
-        },
-        Status: {
-          status: {
-            name: status
-          }
-        },
-        Priority: {
-          select: {
-            name: priority
-          }
-        },
-        'Due Date': {
-          date: {
-            start: dueDate || null
-          }
-        }
-      }
+      properties
     });
 
     res.status(201).json({
@@ -101,34 +107,40 @@ app.put('/api/tasks/:id', async (req, res) => {
     const { id } = req.params;
     const { title, status, priority, dueDate } = req.body;
 
-    await notion.pages.update({
-      page_id: id,
-      properties: {
-        Title: {
-          title: [
-            {
-              text: {
-                content: title
-              }
+    const properties = {
+      Title: {
+        title: [
+          {
+            text: {
+              content: title
             }
-          ]
-        },
-        Status: {
-          status: {
-            name: status
           }
-        },
-        Priority: {
-          select: {
-            name: priority
-          }
-        },
-        'Due Date': {
-          date: {
-            start: dueDate || null
-          }
+        ]
+      },
+      Status: {
+        status: {
+          name: status
+        }
+      },
+      Priority: {
+        select: {
+          name: priority
         }
       }
+    };
+
+    // Only add Due Date if provided
+    if (dueDate) {
+      properties['Due Date'] = {
+        date: {
+          start: dueDate
+        }
+      };
+    }
+
+    await notion.pages.update({
+      page_id: id,
+      properties
     });
 
     res.json({ id, title });

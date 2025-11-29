@@ -30,8 +30,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "@notionhq/client": "^2.2.14",
-    "electron-is-dev": "^2.0.0",
-    "electron-squirrel-startup": "^1.1.0"
+    "electron-is-dev": "^2.0.0"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",

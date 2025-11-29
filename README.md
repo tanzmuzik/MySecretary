@@ -1,37 +1,36 @@
 # MySecretary
 
-Windows 11専用の高速タスク管理アプリケーション。Notionとシームレスに統合し、デスクトップアプリケーションとして動作します。
+Notion統合のシンプルなWebベースのタスク管理アプリケーション。React + Express + Notion APIで構築されています。
 
 ## 🌟 特徴
 
 - **Notionベースのタスク管理**: Notion APIを使用してタスクを直接管理
-- **Electronスタンドアロンアプリ**: Windows 11ネイティブアプリケーション
-- **リアルタイム更新**: タスクの変更をリアルタイムで同期
-- **モダンなUI**: レスポンシブで直感的なインターフェース
+- **モダンなWebUI**: React + TypeScriptで実装したレスポンシブなインターフェース
+- **リアルタイム同期**: Notion側の変更をアプリに反映
+- **簡単セットアップ**: フロントエンド・バックエンド分離で構成がシンプル
 - **タスク優先度管理**: 低・中・高の優先度レベル
 - **ステータス追跡**: 未開始・実施中・完了の状態管理
-- **統計情報**: タスク進捗の一目での把握
+- **統計ダッシュボード**: タスク進捗の一目での把握
 
 ## 📋 プロジェクト構造
 
 ```
 MySecretary/
-├── public/
-│   ├── electron.js        # Electronメインプロセス
-│   ├── preload.js         # セキュアなプリロード
-│   └── assets/           # アプリケーションアセット
-├── frontend/             # Reactアプリケーション
-│   ├── src/             # ソースコード
-│   ├── public/          # 静的アセット
-│   └── package.json     # フロントエンド依存関係
-├── backend/             # Express APIサーバー（Electronに統合）
-│   └── package.json     # バックエンド依存関係
-├── package.json         # ルートパッケージ設定
-├── .env.example         # 環境変数テンプレート
-└── README.md           # このファイル
+├── server.js               # Express APIサーバー
+├── package.json            # バックエンド依存関係
+├── .env.example           # 環境変数テンプレート
+├── frontend/              # React Webアプリケーション
+│   ├── src/
+│   │   ├── App.tsx        # メインアプリコンポーネント
+│   │   ├── App.css        # スタイル
+│   │   └── index.tsx      # エントリーポイント
+│   ├── public/
+│   │   └── index.html
+│   └── package.json       # フロントエンド依存関係
+└── README.md             # このファイル
 ```
 
-## 🚀 セットアップガイド
+## 🚀 クイックスタート
 
 ### 前提条件
 
@@ -40,68 +39,64 @@ MySecretary/
 - Notion APIキー
 - Notionのタスク管理用データベース
 
-### インストール手順
-
-1. **リポジトリをクローン:**
-   ```bash
-   git clone <repository-url>
-   cd MySecretary
-   ```
-
-2. **依存関係をインストール:**
-   ```bash
-   npm install
-   ```
-
-3. **環境変数を設定:**
-   ```bash
-   cp .env.example .env
-   ```
-
-   `.env`ファイルを編集して、Notion認証情報を追加:
-   ```env
-   NOTION_API_KEY=your_notion_api_key
-   NOTION_DATABASE_ID=your_database_id
-   BACKEND_PORT=3001
-   ```
-
-### Notion APIキーの取得
+### 1. Notion APIキーの取得
 
 1. [Notion Developers](https://developers.notion.com/)にアクセス
 2. 「新しいインテグレーション」を作成
-3. APIキーをコピーして`.env`に貼り付け
-4. Notionデータベースを作成（以下の構造を使用）:
+3. APIキーをコピー（後で使用）
+4. Notionで以下のスキーマのデータベースを作成:
+   - **Title** (テキスト)
+   - **Status** (ステータス: Not started, In Progress, Done)
+   - **Priority** (セレクト: Low, Normal, High)
+   - **Due Date** (日付、オプション)
 
-**Notionデータベーススキーマ:**
-- Title (テキスト)
-- Status (ステータス: Not started, In Progress, Done)
-- Priority (セレクト: Low, Normal, High)
-- Due Date (日付)
+5. データベースIDをコピー
 
-5. データベースIDを`.env`に追加
+### 2. 環境変数を設定
 
-### 開発環境での実行
+```bash
+cp .env.example .env
+```
 
+`.env`ファイルを編集:
+
+```env
+NOTION_API_KEY=your_api_key_here
+NOTION_DATABASE_ID=your_database_id_here
+PORT=3001
+```
+
+### 3. 依存関係をインストール
+
+```bash
+# バックエンド
+npm install
+
+# フロントエンド
+cd frontend
+npm install
+cd ..
+```
+
+### 4. アプリを実行
+
+**ターミナル1 - バックエンドサーバー:**
 ```bash
 npm run dev
 ```
+APIサーバーが http://localhost:3001 で起動します
 
-このコマンドは以下を同時に実行します:
-- React開発サーバー (http://localhost:3000)
-- Electronアプリケーション
-- Express APIサーバー (http://localhost:3001)
-
-### ビルド
-
-スタンドアロンのWindows実行ファイルを作成:
-
+**ターミナル2 - フロントエンドアプリ:**
 ```bash
-npm run build
+cd frontend
+npm start
 ```
-
-インストーラーと実行可能ファイルは `dist/` フォルダに生成されます。
+Webアプリが http://localhost:3000 で起動します
 
 ## 📱 API エンドポイント
+
+### ヘルスチェック
+- `GET /health` - サーバーの状態確認
 
 ### タスク管理
 
@@ -112,19 +107,27 @@ npm run build
 | PUT | `/api/tasks/:id` | タスクを更新 |
 | DELETE | `/api/tasks/:id` | タスクを削除（アーカイブ） |
 
-### ヘルスチェック
+### リクエスト例
 
-- `GET /health` - バックエンドの状態確認
+**新規タスク作成:**
+```bash
+curl -X POST http://localhost:3001/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "買い物をする",
+    "status": "Not started",
+    "priority": "Normal"
+  }'
+```
 
 ## 🛠 技術スタック
 
 | カテゴリ | 技術 |
 |---------|------|
 | **フロントエンド** | React 18, TypeScript, CSS3 |
-| **デスクトップ** | Electron, Electron Builder |
 | **バックエンド** | Node.js, Express.js |
 | **データベース** | Notion API |
-| **開発ツール** | Concurrently, Wait-on |
+| **開発ツール** | nodemon |
 
 ## 💻 使用方法
 
@@ -136,19 +139,18 @@ npm run build
 
 ### タスク編集
 - タスクタイトルをダブルクリックして編集
-- EnterキーまたはTab、またはクリック外で保存
+- Enter キーで保存
 
 ### ステータス変更
 - ステータスドロップダウンから変更可能
 - 自動的にNotionに同期
 
-### 優先度確認
-- 各タスクの優先度が色別で表示
-- 赤: 高, 黄: 中, 緑: 低
+### タスク削除
+- 「削除」ボタンをクリック
+- Notionで自動的にアーカイブ
 
-## 📊 統計情報
+## 📊 ダッシュボード統計
 
-ダッシュボード下部に以下の統計が表示されます:
 - 総タスク数
 - 完了したタスク数
 - 実施中のタスク数
@@ -156,21 +158,32 @@ npm run build
 
 ## 🔐 セキュリティ
 
-- Electronのコンテキスト分離を有効化
-- IPC通信による安全なプロセス間通信
-- 環境変数による認証情報の管理
+- 環境変数で認証情報を管理
+- CORSで安全なクロスオリジンリクエストを処理
+- APIキーはサーバー側のみで使用
 
 ## 🐛 トラブルシューティング
 
-### Notion APIエラーが出る
-- APIキーが正しく設定されているか確認
+### Notion API エラー
+```
+Error: Failed to fetch tasks
+```
+**解決策:**
+- APIキーが正しいか確認
 - データベースIDが正しいか確認
-- Notionの接続権限を確認
+- NotionでAPIキーに適切な権限があるか確認
 
-### アプリが起動しない
-- Node.js バージョンを確認（v16以上）
-- `npm install` で依存関係が正しくインストールされたか確認
-- ポート3000, 3001が使用可能か確認
+### ポート使用中エラー
+```
+Error: listen EADDRINUSE: address already in use :::3001
+```
+**解決策:**
+- ポート3001が使用可能か確認: `netstat -ano | findstr :3001`
+- 別のポートを使用: `PORT=3002 npm run dev`
+
+### フロントエンドがバックエンドに接続できない
+- バックエンドサーバーが起動しているか確認
+- `http://localhost:3001/health` にアクセス可能か確認
 
 ## 📝 ライセンス
 
@@ -178,4 +191,4 @@ ISC
 
 ## 🤝 貢献
 
-プルリクエストを歓迎します。大きな変更の場合は、まずissueを開いて変更内容を説明してください。
+問題報告やプルリクエストを歓迎します！

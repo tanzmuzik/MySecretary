@@ -1,83 +1,23 @@
 {
-  "name": "mysecretary",
+  "name": "mysecretary-backend",
   "version": "1.0.0",
-  "description": "Windows 11 Desktop Task Management App with Notion Integration",
-  "main": "public/electron.js",
-  "homepage": "./",
+  "description": "MySecretary - Notion-integrated Task Management API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": ["task-management", "notion", "api"],
   "author": "",
   "license": "ISC",
-  "scripts": {
-    "react-start": "react-scripts start",
-    "react-build": "react-scripts build",
-    "react-test": "react-scripts test",
-    "react-eject": "react-scripts eject",
-    "electron-start": "wait-on http://localhost:3000 && electron .",
-    "start": "concurrently \"npm run react-start\" \"npm run electron-start\"",
-    "build": "npm run react-build && electron-builder",
-    "dev": "concurrently \"npm run react-start\" \"npm run electron-start\"",
-    "test": "npm run react-test --passWithNoTests"
-  },
   "dependencies": {
-    "@types/node": "^16.18.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.9.0",
-    "web-vitals": "^2.1.4",
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "@notionhq/client": "^2.2.14",
-    "electron-is-dev": "^2.0.0"
+    "@notionhq/client": "^2.2.14"
   },
   "devDependencies": {
-    "@types/jest": "^27.5.2",
-    "electron": "27.0.0",
-    "electron-builder": "^24.6.4",
-    "concurrently": "^8.2.2",
-    "wait-on": "^7.0.1",
     "nodemon": "^3.0.2"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "build": {
-    "appId": "com.mysecretary.app",
-    "productName": "MySecretary",
-    "files": [
-      "build/**/*",
-      "public/electron.js",
-      "node_modules/**/*"
-    ],
-    "directories": {
-      "buildResources": "public"
-    },
-    "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
   }
 }
+

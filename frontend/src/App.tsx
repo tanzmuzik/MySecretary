@@ -28,9 +28,18 @@ function App() {
     try {
       const response = await fetch('http://localhost:3001/api/tasks');
       const data = await response.json();
-      setTasks(data);
+      console.log('API Response:', data);
+
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setTasks(data);
+      } else {
+        console.error('Expected array but got:', typeof data);
+        setTasks([]);
+      }
     } catch (error) {
       console.error('Error loading tasks:', error);
+      setTasks([]);
     } finally {
       setLoading(false);
     }

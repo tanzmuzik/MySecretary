@@ -19,13 +19,15 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: weatherWidth,
     height: weatherHeight,
+    minWidth: 300,
+    minHeight: 400,
     x: x,
     y: y,
     transparent: true,
     frame: false,
     alwaysOnTop: true,
     skipTaskbar: true,
-    resizable: false,
+    resizable: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

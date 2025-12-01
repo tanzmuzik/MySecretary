@@ -3,7 +3,7 @@
 // OpenWeatherMap API configuration
 // ユーザーは自分のAPIキーを取得して、ここに設定する必要があります
 // Get your free API key from: https://openweathermap.org/api
-const API_KEY = 'YOUR_API_KEY_HERE'; // ← ここにAPIキーを入力してください
+const API_KEY = 'bc86fd25ca10ab90bb0542588169f481';
 const API_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
 // Get DOM elements

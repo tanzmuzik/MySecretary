@@ -7,7 +7,8 @@ const API_KEY = 'bc86fd25ca10ab90bb0542588169f481';
 const API_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
 // Get DOM elements
-const locationSelect = document.getElementById('location-select');
+const locationInput = document.getElementById('location-input');
+const searchBtn = document.getElementById('search-btn');
 const refreshBtn = document.getElementById('refresh-btn');
 const weatherIcon = document.getElementById('weather-icon');
 const temperature = document.getElementById('temperature');
@@ -46,7 +47,7 @@ const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
 
 // Get saved location or use default
 let currentLocation = localStorage.getItem('selectedLocation') || 'Tokyo,JP';
-locationSelect.value = currentLocation;
+locationInput.value = currentLocation;
 
 // Function to show error
 function showError(message) {
@@ -184,11 +185,23 @@ async function updateWeather() {
   await fetchForecast(currentLocation);
 }
 
+// Function to search weather for a new location
+function searchLocation() {
+  const newLocation = locationInput.value.trim();
+  if (newLocation) {
+    currentLocation = newLocation;
+    localStorage.setItem('selectedLocation', currentLocation);
+    updateWeather();
+  }
+}
+
 // Event listeners
-locationSelect.addEventListener('change', (e) => {
-  currentLocation = e.target.value;
-  localStorage.setItem('selectedLocation', currentLocation);
-  updateWeather();
+searchBtn.addEventListener('click', searchLocation);
+
+locationInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    searchLocation();
+  }
 });
 
 refreshBtn.addEventListener('click', () => {

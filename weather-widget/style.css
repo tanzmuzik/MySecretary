@@ -36,24 +36,29 @@ body {
   -webkit-app-region: no-drag;
 }
 
-.location-select {
+.location-input {
   flex: 1;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.95);
   padding: 8px 12px;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
   -webkit-app-region: no-drag;
+  outline: none;
 }
 
-.location-select option {
-  background: rgba(40, 40, 60, 0.95);
-  color: white;
+.location-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
 }
 
+.location-input:focus {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.search-btn,
 .refresh-btn {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -71,9 +76,18 @@ body {
   -webkit-app-region: no-drag;
 }
 
+.search-btn:hover,
 .refresh-btn:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.refresh-btn:hover {
   transform: rotate(90deg);
+}
+
+.search-btn:active,
+.refresh-btn:active {
+  transform: scale(0.95);
 }
 
 .refresh-btn:active {
@@ -243,11 +257,21 @@ body.light-theme .weather-container {
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-body.light-theme .location-select,
+body.light-theme .location-input,
+body.light-theme .search-btn,
 body.light-theme .refresh-btn {
   background: rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.2);
   color: rgba(0, 0, 0, 0.9);
+}
+
+body.light-theme .location-input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+body.light-theme .location-input:focus {
+  background: rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.3);
 }
 
 body.light-theme .temperature,

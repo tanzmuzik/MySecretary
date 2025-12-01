@@ -10,16 +10,14 @@
   <div class="weather-container">
     <!-- Location Selection -->
     <div class="location-header">
-      <select class="location-select" id="location-select">
-        <option value="Tokyo,JP">東京</option>
-        <option value="Osaka,JP">大阪</option>
-        <option value="Kyoto,JP">京都</option>
-        <option value="Fukuoka,JP">福岡</option>
-        <option value="Sapporo,JP">札幌</option>
-        <option value="Nagoya,JP">名古屋</option>
-        <option value="Yokohama,JP">横浜</option>
-        <option value="Kobe,JP">神戸</option>
-      </select>
+      <input
+        type="text"
+        class="location-input"
+        id="location-input"
+        placeholder="都市名を入力 (例: Tokyo, Osaka)"
+        value="Tokyo,JP"
+      />
+      <button class="search-btn" id="search-btn" title="検索">🔍</button>
       <button class="refresh-btn" id="refresh-btn" title="更新">🔄</button>
     </div>
 

@@ -1,6 +1,6 @@
 # MySecretary
 
-A task management application with Microsoft Teams integration built with React and Node.js, plus desktop widgets (analog clock and monthly calendar) for Windows 11.
+A task management application with Microsoft Teams integration built with React and Node.js, plus desktop widgets (analog clock, monthly calendar, and weather forecast) for Windows 11.
 
 ## Features
 
@@ -24,6 +24,14 @@ A task management application with Microsoft Teams integration built with React 
 - **Navigation**: Easy month navigation with arrow buttons
 - **Theme Support**: Switch between transparent and light themes
 - **Auto Update**: Automatically updates at midnight
+
+### Weather Forecast Widget
+- **天気予報**: Real-time weather forecast with transparent background
+- **Current Weather**: Temperature, feels like, humidity, wind speed
+- **5-Day Forecast**: Daily weather predictions
+- **Multiple Cities**: Support for major Japanese cities
+- **Auto Refresh**: Updates every 10 minutes
+- **OpenWeatherMap API**: Free weather data integration
 
 ## Project Structure
 
@@ -50,6 +58,13 @@ MySecretary/
 │   ├── index.html   # Calendar UI
 │   ├── style.css    # Styling with transparency
 │   ├── calendar.js  # Calendar logic (Monday start)
+│   ├── package.json # Widget dependencies
+│   └── README.md    # Widget documentation
+├── weather-widget/  # Windows 11 Weather Forecast Widget (Electron)
+│   ├── main.js      # Electron main process
+│   ├── index.html   # Weather UI
+│   ├── style.css    # Styling with transparency
+│   ├── weather.js   # Weather API logic
 │   ├── package.json # Widget dependencies
 │   └── README.md    # Widget documentation
 └── README.md        # This file
@@ -152,7 +167,38 @@ For detailed clock widget documentation, see [clock-widget/README.md](clock-widg
 
 For detailed calendar widget documentation, see [calendar-widget/README.md](calendar-widget/README.md)
 
-**Note**: You can run both clock and calendar widgets simultaneously!
+### Running the Weather Widget
+
+**Important**: You need a free OpenWeatherMap API key to use the weather widget.
+
+1. **Get your free API key:**
+   - Visit https://openweathermap.org/
+   - Create a free account
+   - Get your API key from "My API keys"
+
+2. **Install weather widget dependencies:**
+   ```bash
+   cd weather-widget
+   npm install
+   ```
+
+3. **Configure API key:**
+   - Open `weather.js` file
+   - Replace `YOUR_API_KEY_HERE` with your actual API key
+
+4. **Start the weather widget:**
+   ```bash
+   npm start
+   ```
+
+5. **Build Windows executable (optional):**
+   ```bash
+   npm run build:win
+   ```
+
+For detailed weather widget documentation, see [weather-widget/README.md](weather-widget/README.md)
+
+**Note**: You can run all three widgets (clock, calendar, and weather) simultaneously!
 
 ## API Endpoints
 

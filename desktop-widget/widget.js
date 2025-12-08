@@ -214,6 +214,7 @@ renderCalendar();
 // ==================== Alarms ====================
 const alarmList = document.getElementById('alarm-list');
 const addAlarmBtn = document.getElementById('add-alarm-btn');
+const closeBtn = document.getElementById('close-btn');
 const alarmModal = document.getElementById('alarm-modal');
 const modalClose = document.getElementById('modal-close');
 const cancelAlarm = document.getElementById('cancel-alarm');
@@ -501,8 +502,19 @@ if ('Notification' in window) {
 
 renderAlarms();
 
-// Theme switching
+// Close button
+closeBtn.addEventListener('click', () => {
+  window.close();
+});
+
+// Keyboard shortcuts
 document.addEventListener('keydown', (event) => {
+  // Close with Escape key
+  if (event.key === 'Escape') {
+    window.close();
+  }
+
+  // Theme switching with T key
   if (event.key === 't' || event.key === 'T') {
     document.body.classList.toggle('light-theme');
   }

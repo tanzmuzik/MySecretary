@@ -46,11 +46,12 @@
 ## 技術スタック
 
 - **言語**：Python 3.10 以上
-- **GUI**：tkinter（Python標準ライブラリ）
+- **GUI**：wxPython（Windows ネイティブダイアログ使用）
 - **PDF操作**：PyPDF2
 - **画像処理**：Pillow
 - **テキスト追記**：reportlab
 - **日本語フォント**：Windows標準フォント（Yu Gothic、Meiryoなど）
+- **ビルド**：PyInstaller（スタンドアロン .exe 生成用）
 
 ## セットアップ
 
@@ -188,30 +189,36 @@ QRコードと部屋番号をテンプレートPDFに配置して出力
 **戻り値：**
 `(開始番号, 終了番号)` のタプルリスト
 
-## .exe ファイル化（配布用）
+## .exe ファイル化（高速化・配布用）
 
-一般ユーザーに配布する場合、PyInstaller でスタンドアロン化することをお勧めします。
+wxPython は Python インタプリタのオーバーヘッドがあり、ファイルダイアログの初期化が遅くなることがあります。PyInstaller を使ってスタンドアロン化することで、パフォーマンスが大幅に改善されます。
 
-### セットアップ
+### セットアップと .exe ビルド
 
-1. **PyInstaller をインストール**
+1. **セットアップを実行**（PyInstaller は requirements.txt に含まれています）
    ```cmd
-   pip install pyinstaller
+   setup.bat
    ```
 
 2. **exe ファイルをビルド**
    ```cmd
-   pyinstaller --onefile --windowed --name "QR_PDF_Generator" src/main.py
+   build.bat
    ```
 
 3. **実行ファイルの場所**
    ```
-   dist/QR_PDF_Generator.exe
+   dist/QRコード配置PDF生成アプリ.exe
    ```
 
 4. **配布方法**
-   - `dist/QR_PDF_Generator.exe` をユーザーに配布
+   - `dist/QRコード配置PDF生成アプリ.exe` をユーザーに配布
    - ダブルクリックで実行可能
+   - **Python のインストール不要**（スタンドアロン実行形式）
+
+### パフォーマンス
+
+- **Python スクリプト版（run.bat）**：ファイルダイアログで 2～20 秒の遅延あり
+- **.exe 版（build.bat → dist/*.exe）**：ファイルダイアログがほぼ瞬時に開く（大幅改善）
 
 ## テスト実行
 

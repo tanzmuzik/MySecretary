@@ -11,8 +11,6 @@ from pathlib import Path
 from typing import Optional, List
 import threading
 
-from pdf_processor import PDFProcessor, auto_detect_qr_images, split_into_batches
-
 
 class QRPDFGeneratorApp:
     """GUIアプリケーションメインクラス"""
@@ -167,6 +165,9 @@ class QRPDFGeneratorApp:
     def _execute_thread(self):
         """実行処理（スレッド）"""
         try:
+            # 必要な時だけモジュールをインポート（遅延ロード）
+            from pdf_processor import PDFProcessor, auto_detect_qr_images, split_into_batches
+
             # PDFプロセッサを初期化
             processor = PDFProcessor(self.template_pdf_path)
 

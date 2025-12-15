@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Optional, List
 import threading
 
-from pdf_processor import PDFProcessor, split_rooms_into_batches
+from pdf_processor import PDFProcessor, auto_detect_qr_images, split_into_batches
 
 
 class QRPDFGeneratorApp:
@@ -79,23 +79,8 @@ class QRPDFGeneratorApp:
             command=self._select_qr_folder
         ).pack(side=tk.RIGHT, padx=5)
 
-        # 3. 部屋番号指定
-        room_frame = ttk.LabelFrame(main_frame, text="3. 部屋番号指定", padding=10)
-        room_frame.pack(fill=tk.X, pady=10)
-
-        range_inner_frame = ttk.Frame(room_frame)
-        range_inner_frame.pack(fill=tk.X)
-
-        ttk.Label(range_inner_frame, text="開始番号:").pack(side=tk.LEFT, padx=5)
-        self.start_room_var = tk.StringVar(value="101")
-        ttk.Entry(range_inner_frame, textvariable=self.start_room_var, width=10).pack(side=tk.LEFT, padx=5)
-
-        ttk.Label(range_inner_frame, text="終了番号:").pack(side=tk.LEFT, padx=5)
-        self.end_room_var = tk.StringVar(value="136")
-        ttk.Entry(range_inner_frame, textvariable=self.end_room_var, width=10).pack(side=tk.LEFT, padx=5)
-
-        # 4. 出力フォルダ選択
-        output_frame = ttk.LabelFrame(main_frame, text="4. 出力フォルダ", padding=10)
+        # 3. 出力フォルダ選択
+        output_frame = ttk.LabelFrame(main_frame, text="3. 出力フォルダ", padding=10)
         output_frame.pack(fill=tk.X, pady=10)
 
         self.output_label = ttk.Label(output_frame, text="選択されていません", foreground="gray")
@@ -164,19 +149,6 @@ class QRPDFGeneratorApp:
             messagebox.showerror("エラー", "出力フォルダを選択してください")
             return False
 
-        try:
-            start_room = int(self.start_room_var.get())
-            end_room = int(self.end_room_var.get())
-            if start_room > end_room:
-                messagebox.showerror("エラー", "開始番号は終了番号以下である必要があります")
-                return False
-            if (end_room - start_room + 1) > 1000:
-                messagebox.showerror("エラー", "最大1000室までサポートしています")
-                return False
-        except ValueError:
-            messagebox.showerror("エラー", "部屋番号は整数で入力してください")
-            return False
-
         return True
 
     def _execute(self):
@@ -195,30 +167,19 @@ class QRPDFGeneratorApp:
     def _execute_thread(self):
         """実行処理（スレッド）"""
         try:
-            start_room = int(self.start_room_var.get())
-            end_room = int(self.end_room_var.get())
-
             # PDFプロセッサを初期化
             processor = PDFProcessor(self.template_pdf_path)
 
-            # 部屋番号をバッチに分割
-            batches = split_rooms_into_batches(start_room, end_room, batch_size=10)
+            # QRコード画像を自動検出
+            all_qr_images, all_room_numbers = auto_detect_qr_images(self.qr_folder_path)
+
+            # QRコード画像をバッチに分割
+            qr_batches = split_into_batches(list(zip(all_qr_images, all_room_numbers)), batch_size=10)
 
             # 各バッチごとにPDFを生成
-            for batch_idx, (batch_start, batch_end) in enumerate(batches, 1):
-                # QRコード画像と部屋番号を取得
-                qr_images = []
-                room_numbers = []
-
-                for room_num in range(batch_start, batch_end + 1):
-                    qr_filename = f"qr_{room_num}.png"
-                    qr_path = os.path.join(self.qr_folder_path, qr_filename)
-
-                    if not os.path.exists(qr_path):
-                        raise FileNotFoundError(f"QR code image not found: {qr_filename}")
-
-                    qr_images.append(qr_path)
-                    room_numbers.append(str(room_num))
+            for batch_idx, qr_pairs in enumerate(qr_batches, 1):
+                qr_images = [pair[0] for pair in qr_pairs]
+                room_numbers = [pair[1] for pair in qr_pairs]
 
                 # PDFを出力
                 output_filename = f"output_{batch_idx}.pdf"
@@ -227,11 +188,11 @@ class QRPDFGeneratorApp:
                 processor.create_output_pdf(qr_images, room_numbers, output_path)
 
                 # ステータス更新
-                progress_msg = f"処理中... {batch_idx}/{len(batches)}"
+                progress_msg = f"処理中... {batch_idx}/{len(qr_batches)}"
                 self.root.after(0, lambda msg=progress_msg: self.status_var.set(msg))
 
             # 成功メッセージ
-            success_msg = f"完了！ {len(batches)}個のPDFファイルを生成しました"
+            success_msg = f"完了！ {len(qr_batches)}個のPDFファイルを生成しました"
             self.root.after(
                 0,
                 lambda msg=success_msg: (

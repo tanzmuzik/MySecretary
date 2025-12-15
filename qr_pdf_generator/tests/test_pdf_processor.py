@@ -11,7 +11,7 @@ from pathlib import Path
 # srcモジュールをインポート可能に
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from pdf_processor import PDFProcessor, SlotCoordinate, split_rooms_into_batches
+from pdf_processor import PDFProcessor, SlotCoordinate, auto_detect_qr_images, split_into_batches
 
 
 class TestSlotCoordinate(unittest.TestCase):
@@ -40,30 +40,70 @@ class TestSlotCoordinate(unittest.TestCase):
             self.assertEqual(x_coords, sorted(x_coords))
 
 
-class TestSplitRooms(unittest.TestCase):
-    """部屋番号分割テスト"""
+class TestSplitBatches(unittest.TestCase):
+    """バッチ分割テスト"""
 
     def test_split_exact_batch(self):
         """正確に分割される場合"""
-        batches = split_rooms_into_batches(101, 110, batch_size=10)
+        items = list(range(10))
+        batches = split_into_batches(items, batch_size=10)
         self.assertEqual(len(batches), 1)
-        self.assertEqual(batches[0], (101, 110))
+        self.assertEqual(batches[0], items)
 
     def test_split_multiple_batches(self):
         """複数バッチに分割される場合"""
-        batches = split_rooms_into_batches(101, 136, batch_size=10)
+        items = list(range(36))
+        batches = split_into_batches(items, batch_size=10)
         self.assertEqual(len(batches), 4)
-        self.assertEqual(batches[0], (101, 110))
-        self.assertEqual(batches[1], (111, 120))
-        self.assertEqual(batches[2], (121, 130))
-        self.assertEqual(batches[3], (131, 136))
+        self.assertEqual(len(batches[0]), 10)
+        self.assertEqual(len(batches[1]), 10)
+        self.assertEqual(len(batches[2]), 10)
+        self.assertEqual(len(batches[3]), 6)
 
     def test_split_partial_batch(self):
         """不完全なバッチ"""
-        batches = split_rooms_into_batches(101, 115, batch_size=10)
+        items = list(range(15))
+        batches = split_into_batches(items, batch_size=10)
         self.assertEqual(len(batches), 2)
-        self.assertEqual(batches[0], (101, 110))
-        self.assertEqual(batches[1], (111, 115))
+        self.assertEqual(len(batches[0]), 10)
+        self.assertEqual(len(batches[1]), 5)
+
+
+class TestAutoDetectQRImages(unittest.TestCase):
+    """QRコード自動検出テスト"""
+
+    def setUp(self):
+        """テストの初期化"""
+        self.temp_dir = tempfile.mkdtemp()
+
+    def test_no_folder(self):
+        """フォルダが見つからない場合"""
+        with self.assertRaises(FileNotFoundError):
+            auto_detect_qr_images("/non/existent/folder")
+
+    def test_no_qr_files(self):
+        """QRコードファイルが無い場合"""
+        with self.assertRaises(ValueError):
+            auto_detect_qr_images(self.temp_dir)
+
+    def test_auto_detect_qr_files(self):
+        """QRコードファイルを自動検出"""
+        # テンポラリQRコードファイルを作成
+        qr_files = ["qr_101.png", "qr_102.png", "qr_A201.png"]
+        for qr_file in qr_files:
+            path = os.path.join(self.temp_dir, qr_file)
+            with open(path, 'w') as f:
+                f.write("dummy")
+
+        qr_images, room_numbers = auto_detect_qr_images(self.temp_dir)
+        self.assertEqual(len(qr_images), 3)
+        self.assertEqual(len(room_numbers), 3)
+        self.assertEqual(room_numbers, ["101", "102", "A201"])
+
+    def tearDown(self):
+        """テストの終了処理"""
+        import shutil
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
 
 
 class TestPDFProcessor(unittest.TestCase):

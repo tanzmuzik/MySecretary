@@ -70,6 +70,46 @@ def find_japanese_font() -> str:
     return 'Helvetica'
 
 
+def auto_detect_qr_images(qr_folder: str) -> Tuple[List[str], List[str]]:
+    """
+    QRコードフォルダから qr_*.png ファイルを自動検出し、部屋番号を抽出
+
+    ファイル名から部屋番号を自動抽出するため、ナンバリング規則に依存しない
+
+    Args:
+        qr_folder: QRコード画像フォルダのパス
+
+    Returns:
+        (QRコード画像パスのリスト, 部屋番号のリスト) のタプル
+
+    Raises:
+        FileNotFoundError: フォルダが見つからない
+        ValueError: QRコード画像ファイルが見つからない
+    """
+    if not os.path.exists(qr_folder):
+        raise FileNotFoundError(f"QR folder not found: {qr_folder}")
+
+    qr_files = sorted([f for f in os.listdir(qr_folder) if f.lower().startswith('qr_') and f.lower().endswith('.png')])
+
+    if not qr_files:
+        raise ValueError(f"No QR code images found in {qr_folder}")
+
+    qr_images = []
+    room_numbers = []
+
+    for qr_file in qr_files:
+        # ファイル名から部屋番号を抽出
+        # qr_101.png → 101
+        # qr_A201.png → A201
+        room_number = qr_file[3:-4]  # "qr_" を削除、".png" を削除
+
+        qr_path = os.path.join(qr_folder, qr_file)
+        qr_images.append(qr_path)
+        room_numbers.append(room_number)
+
+    return qr_images, room_numbers
+
+
 class SlotCoordinate:
     """スロット座標定義クラス"""
     # A4サイズ：210mm × 297mm
@@ -227,24 +267,18 @@ class PDFProcessor:
         return pdf_buffer
 
 
-def split_rooms_into_batches(start_room: int, end_room: int, batch_size: int = 10) -> List[Tuple[int, int]]:
+def split_into_batches(items: List, batch_size: int = 10) -> List[List]:
     """
-    部屋番号をバッチに分割
+    リストをバッチに分割
 
     Args:
-        start_room: 開始部屋番号
-        end_room: 終了部屋番号
+        items: 分割するリスト
         batch_size: バッチあたりの件数（デフォルト10）
 
     Returns:
-        (開始番号, 終了番号) のタプルリスト
+        バッチごとに分割されたリスト
     """
     batches = []
-    current = start_room
-
-    while current <= end_room:
-        batch_end = min(current + batch_size - 1, end_room)
-        batches.append((current, batch_end))
-        current = batch_end + 1
-
+    for i in range(0, len(items), batch_size):
+        batches.append(items[i:i + batch_size])
     return batches

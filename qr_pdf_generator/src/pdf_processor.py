@@ -126,19 +126,19 @@ class SlotCoordinate:
     # スロット座標（mm単位）
     # 各スロット：幅約40mm、高さ約40mm
     SLOTS = [
-        # 1行目（Y: 約20-60mm）
-        {"row": 1, "col": 1, "x": 20, "y": 240, "width": 40, "height": 40},   # slot 1
-        {"row": 1, "col": 2, "x": 70, "y": 240, "width": 40, "height": 40},   # slot 2
-        {"row": 1, "col": 3, "x": 120, "y": 240, "width": 40, "height": 40},  # slot 3
-        {"row": 1, "col": 4, "x": 170, "y": 240, "width": 40, "height": 40},  # slot 4
-        {"row": 1, "col": 5, "x": 220, "y": 240, "width": 40, "height": 40},  # slot 5
+        # 1行目（Y: 上から約50mm）
+        {"row": 1, "col": 1, "x": 20, "y": 50, "width": 40, "height": 40},   # slot 1
+        {"row": 1, "col": 2, "x": 70, "y": 50, "width": 40, "height": 40},   # slot 2
+        {"row": 1, "col": 3, "x": 120, "y": 50, "width": 40, "height": 40},  # slot 3
+        {"row": 1, "col": 4, "x": 170, "y": 50, "width": 40, "height": 40},  # slot 4
+        {"row": 1, "col": 5, "x": 220, "y": 50, "width": 40, "height": 40},  # slot 5
 
-        # 2行目（Y: 約110-150mm）
-        {"row": 2, "col": 1, "x": 20, "y": 170, "width": 40, "height": 40},   # slot 6
-        {"row": 2, "col": 2, "x": 70, "y": 170, "width": 40, "height": 40},   # slot 7
-        {"row": 2, "col": 3, "x": 120, "y": 170, "width": 40, "height": 40},  # slot 8
-        {"row": 2, "col": 4, "x": 170, "y": 170, "width": 40, "height": 40},  # slot 9
-        {"row": 2, "col": 5, "x": 220, "y": 170, "width": 40, "height": 40},  # slot 10
+        # 2行目（Y: 上から約125mm）
+        {"row": 2, "col": 1, "x": 20, "y": 125, "width": 40, "height": 40},   # slot 6
+        {"row": 2, "col": 2, "x": 70, "y": 125, "width": 40, "height": 40},   # slot 7
+        {"row": 2, "col": 3, "x": 120, "y": 125, "width": 40, "height": 40},  # slot 8
+        {"row": 2, "col": 4, "x": 170, "y": 125, "width": 40, "height": 40},  # slot 9
+        {"row": 2, "col": 5, "x": 220, "y": 125, "width": 40, "height": 40},  # slot 10
     ]
 
     QRCODE_SIZE = 30  # QRコード画像サイズ（mm）

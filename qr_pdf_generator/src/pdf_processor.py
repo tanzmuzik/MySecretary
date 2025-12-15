@@ -266,8 +266,9 @@ class PDFProcessor:
                 traceback.print_exc()
                 continue
 
-            # 部屋番号をテキストで追記
-            text_y_mm = y_mm - SlotCoordinate.TEXT_BELOW_MARGIN
+            # 部屋番号をテキストで追記（QRコードの下）
+            # QRコードの下マージン分下げた位置にテキストを配置
+            text_y_mm = y_mm - (SlotCoordinate.QRCODE_SIZE + SlotCoordinate.TEXT_BELOW_MARGIN)
             text_y_pt = text_y_mm * 72 / 25.4
             text_y_pdf = page_height - text_y_pt
             text_x_pt = x_pt + qr_size_pt / 2  # 中央配置

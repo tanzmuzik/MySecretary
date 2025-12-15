@@ -89,14 +89,7 @@ def auto_detect_qr_images(qr_folder: str) -> Tuple[List[str], List[str]]:
     if not os.path.exists(qr_folder):
         raise FileNotFoundError(f"QR folder not found: {qr_folder}")
 
-    print(f"DEBUG: QR folder: {qr_folder}")
-    print(f"DEBUG: Folder exists: {os.path.exists(qr_folder)}")
-
-    all_files = os.listdir(qr_folder)
-    print(f"DEBUG: All files in folder: {all_files}")
-
-    qr_files = sorted([f for f in all_files if f.lower().startswith('qr_') and f.lower().endswith('.png')])
-    print(f"DEBUG: Detected QR files: {qr_files}")
+    qr_files = sorted([f for f in os.listdir(qr_folder) if f.lower().startswith('qr_') and f.lower().endswith('.png')])
 
     if not qr_files:
         raise ValueError(f"No QR code images found in {qr_folder}")
@@ -111,7 +104,6 @@ def auto_detect_qr_images(qr_folder: str) -> Tuple[List[str], List[str]]:
         room_number = qr_file[3:-4]  # "qr_" を削除、".png" を削除
 
         qr_path = os.path.join(qr_folder, qr_file)
-        print(f"DEBUG: QR file path: {qr_path}, room: {room_number}")
         qr_images.append(qr_path)
         room_numbers.append(room_number)
 
@@ -249,8 +241,6 @@ class PDFProcessor:
 
             # QRコード画像を描画
             try:
-                print(f"DEBUG: Loading QR image: {qr_image_path}")
-                print(f"DEBUG: File exists: {os.path.exists(qr_image_path)}")
                 c.drawImage(
                     qr_image_path,
                     x_pt,
@@ -259,11 +249,8 @@ class PDFProcessor:
                     height=qr_size_pt,
                     preserveAspectRatio=True
                 )
-                print(f"DEBUG: Successfully placed QR image at slot {idx+1}")
             except Exception as e:
-                print(f"ERROR: Failed to load QR image {qr_image_path}: {e}")
-                import traceback
-                traceback.print_exc()
+                print(f"Warning: Failed to load QR image {qr_image_path}: {e}")
                 continue
 
             # 部屋番号をテキストで追記（QRコードの下）

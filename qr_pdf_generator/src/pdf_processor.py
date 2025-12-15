@@ -4,8 +4,10 @@ QRコード配置PDF生成 - PDF処理モジュール
 """
 
 import os
+import sys
+import platform
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from PyPDF2 import PdfWriter, PdfReader
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -14,6 +16,58 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from PIL import Image
 import io
+
+
+def find_japanese_font() -> str:
+    """
+    システムで利用可能な日本語フォントを自動検出
+
+    Windows: Yu Gothic, Meiryo など
+    macOS/Linux: Noto Sans CJK など
+
+    Returns:
+        フォント名またはデフォルトフォント
+    """
+    system = platform.system()
+
+    # Windows の場合
+    if system == "Windows":
+        windows_fonts = [
+            "C:\\Windows\\Fonts\\yugothic.ttf",      # Yu Gothic
+            "C:\\Windows\\Fonts\\meiryo.ttc",        # Meiryo
+            "C:\\Windows\\Fonts\\msmincho.ttc",      # MS 明朝
+            "C:\\Windows\\Fonts\\msgothic.ttc",      # MS ゴシック
+        ]
+
+        for font_path in windows_fonts:
+            if os.path.exists(font_path):
+                try:
+                    pdfmetrics.registerFont(TTFont('Japanese', font_path))
+                    return 'Japanese'
+                except Exception as e:
+                    print(f"Warning: Failed to register font {font_path}: {e}")
+                    continue
+
+    # Linux/macOS の場合
+    else:
+        other_fonts = [
+            '/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc',
+            '/System/Library/Fonts/Hiragino Sans GB.ttc',  # macOS
+            '/usr/share/fonts/truetype/noto/NotoSerifCJK-Regular.ttc',
+        ]
+
+        for font_path in other_fonts:
+            if os.path.exists(font_path):
+                try:
+                    pdfmetrics.registerFont(TTFont('Japanese', font_path))
+                    return 'Japanese'
+                except Exception as e:
+                    print(f"Warning: Failed to register font {font_path}: {e}")
+                    continue
+
+    # フォントが見つからない場合はデフォルト
+    print("Warning: Japanese font not found. Using default font.")
+    return 'Helvetica'
 
 
 class SlotCoordinate:
@@ -123,23 +177,8 @@ class PDFProcessor:
         pdf_buffer = io.BytesIO()
         c = canvas.Canvas(pdf_buffer, pagesize=(page_width, page_height))
 
-        # 日本語フォントを登録（Linuxでは標準フォントを使用）
-        try:
-            # Linuxの標準日本語フォントパスを試す
-            font_paths = [
-                '/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc',
-                '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-            ]
-            for font_path in font_paths:
-                if os.path.exists(font_path):
-                    pdfmetrics.registerFont(TTFont('Japanese', font_path))
-                    font_name = 'Japanese'
-                    break
-            else:
-                # デフォルトフォントを使用
-                font_name = 'Helvetica'
-        except Exception:
-            font_name = 'Helvetica'
+        # 日本語フォントを自動検出して登録
+        font_name = find_japanese_font()
 
         # 各スロットにQRコードと部屋番号を配置
         for idx, (qr_image_path, room_number) in enumerate(zip(qr_images, room_numbers)):

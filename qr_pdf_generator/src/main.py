@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 from typing import Optional, List
 import threading
+import queue
 
 
 class QRPDFGeneratorApp:
@@ -107,31 +108,70 @@ class QRPDFGeneratorApp:
         status_label.pack(fill=tk.X, pady=10)
 
     def _select_template_pdf(self):
-        """テンプレートPDF選択ダイアログ"""
-        path = filedialog.askopenfilename(
-            title="テンプレートPDFを選択",
-            filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
-        )
+        """テンプレートPDF選択ダイアログ（バックグラウンドスレッド）"""
+        self.template_label.config(text="読み込み中...", foreground="blue")
+        self.root.update()
+
+        def thread_func():
+            path = filedialog.askopenfilename(
+                title="テンプレートPDFを選択",
+                filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
+            )
+            self.root.after(0, lambda: self._update_template_label(path))
+
+        thread = threading.Thread(target=thread_func, daemon=True)
+        thread.start()
+
+    def _update_template_label(self, path: Optional[str]):
+        """テンプレートPDFラベルを更新"""
         if path:
             self.template_pdf_path = path
             filename = os.path.basename(path)
             self.template_label.config(text=filename, foreground="black")
+        else:
+            self.template_label.config(text="選択されていません", foreground="gray")
 
     def _select_qr_folder(self):
-        """QRコードフォルダ選択ダイアログ"""
-        path = filedialog.askdirectory(title="QRコードフォルダを選択")
+        """QRコードフォルダ選択ダイアログ（バックグラウンドスレッド）"""
+        self.qr_label.config(text="読み込み中...", foreground="blue")
+        self.root.update()
+
+        def thread_func():
+            path = filedialog.askdirectory(title="QRコードフォルダを選択")
+            self.root.after(0, lambda: self._update_qr_label(path))
+
+        thread = threading.Thread(target=thread_func, daemon=True)
+        thread.start()
+
+    def _update_qr_label(self, path: Optional[str]):
+        """QRコードラベルを更新"""
         if path:
             self.qr_folder_path = path
             foldername = os.path.basename(path)
             self.qr_label.config(text=foldername, foreground="black")
+        else:
+            self.qr_label.config(text="選択されていません", foreground="gray")
 
     def _select_output_folder(self):
-        """出力フォルダ選択ダイアログ"""
-        path = filedialog.askdirectory(title="出力フォルダを選択")
+        """出力フォルダ選択ダイアログ（バックグラウンドスレッド）"""
+        self.output_label.config(text="読み込み中...", foreground="blue")
+        self.root.update()
+
+        def thread_func():
+            path = filedialog.askdirectory(title="出力フォルダを選択")
+            self.root.after(0, lambda: self._update_output_label(path))
+
+        thread = threading.Thread(target=thread_func, daemon=True)
+        thread.start()
+
+    def _update_output_label(self, path: Optional[str]):
+        """出力フォルダラベルを更新"""
         if path:
             self.output_folder_path = path
             foldername = os.path.basename(path)
             self.output_label.config(text=foldername, foreground="black")
+        else:
+            self.output_label.config(text="選択されていません", foreground="gray")
 
     def _validate_inputs(self) -> bool:
         """入力値の検証"""

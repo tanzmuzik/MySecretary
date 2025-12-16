@@ -114,27 +114,29 @@ class SlotCoordinate:
     """スロット座標定義クラス"""
     # A4サイズ：210mm × 297mm
     # スロット配置：2行×5列
+    # テンプレート測定値に基づいた正確な座標
 
     # スロット座標（mm単位）
-    # 各スロット：幅約40mm、高さ約40mm
+    # 1行目上端：65mm、2行目上端：155mm、枠サイズ：31mm×31mm
+    # A4幅（210mm）を5列に均等配置
     SLOTS = [
-        # 1行目（Y: 上から約50mm）
-        {"row": 1, "col": 1, "x": 20, "y": 50, "width": 40, "height": 40},   # slot 1
-        {"row": 1, "col": 2, "x": 70, "y": 50, "width": 40, "height": 40},   # slot 2
-        {"row": 1, "col": 3, "x": 120, "y": 50, "width": 40, "height": 40},  # slot 3
-        {"row": 1, "col": 4, "x": 170, "y": 50, "width": 40, "height": 40},  # slot 4
-        {"row": 1, "col": 5, "x": 220, "y": 50, "width": 40, "height": 40},  # slot 5
+        # 1行目（Y: 上から65.5mm、QRコード配置）
+        {"row": 1, "col": 1, "x": 7.2, "y": 65.5, "width": 31, "height": 31},    # slot 1
+        {"row": 1, "col": 2, "x": 49.2, "y": 65.5, "width": 31, "height": 31},   # slot 2
+        {"row": 1, "col": 3, "x": 91.2, "y": 65.5, "width": 31, "height": 31},   # slot 3
+        {"row": 1, "col": 4, "x": 133.2, "y": 65.5, "width": 31, "height": 31},  # slot 4
+        {"row": 1, "col": 5, "x": 175.2, "y": 65.5, "width": 31, "height": 31},  # slot 5
 
-        # 2行目（Y: 上から約125mm）
-        {"row": 2, "col": 1, "x": 20, "y": 125, "width": 40, "height": 40},   # slot 6
-        {"row": 2, "col": 2, "x": 70, "y": 125, "width": 40, "height": 40},   # slot 7
-        {"row": 2, "col": 3, "x": 120, "y": 125, "width": 40, "height": 40},  # slot 8
-        {"row": 2, "col": 4, "x": 170, "y": 125, "width": 40, "height": 40},  # slot 9
-        {"row": 2, "col": 5, "x": 220, "y": 125, "width": 40, "height": 40},  # slot 10
+        # 2行目（Y: 上から155.5mm、QRコード配置）
+        {"row": 2, "col": 1, "x": 7.2, "y": 155.5, "width": 31, "height": 31},    # slot 6
+        {"row": 2, "col": 2, "x": 49.2, "y": 155.5, "width": 31, "height": 31},   # slot 7
+        {"row": 2, "col": 3, "x": 91.2, "y": 155.5, "width": 31, "height": 31},   # slot 8
+        {"row": 2, "col": 4, "x": 133.2, "y": 155.5, "width": 31, "height": 31},  # slot 9
+        {"row": 2, "col": 5, "x": 175.2, "y": 155.5, "width": 31, "height": 31},  # slot 10
     ]
 
-    QRCODE_SIZE = 30  # QRコード画像サイズ（mm）
-    TEXT_BELOW_MARGIN = 8  # QRコードの下にテキストを配置するためのマージン
+    QRCODE_SIZE = 30  # QRコード画像サイズ（mm、枠31mmに対して若干小さい）
+    TEXT_BELOW_MARGIN = 50  # テキストを大幅に下に配置（テンプレートの空きエリア下部）
 
 
 class PDFProcessor:

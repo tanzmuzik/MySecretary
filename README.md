@@ -1,28 +1,42 @@
-# MySecretary
+# MySecretary - Daily Report Copilot
 
-A task management application with Microsoft Teams integration built with React and Node.js.
+AI-powered daily report generation using Microsoft 365 and Copilot integration. Automatically generate professional daily reports from your activity logs, calendar, emails, and Teams interactions.
 
 ## Features
 
-- **Task Management**: Create, update, and track tasks
-- **Microsoft Teams Integration**: Sync with Teams channels and notifications
-- **Real-time Updates**: Stay connected with your team
-- **Modern UI**: Clean and intuitive React-based interface
+- **📝 Daily Report Generation**: AI-powered report creation from activity logs
+- **🤖 Copilot Integration**: Azure OpenAI-based summarization and key point extraction
+- **📊 Activity Logging**: Track time spent on tasks and projects
+- **📋 Project Management**: Organize and monitor multiple projects
+- **📅 Microsoft 365 Integration**: Auto-sync with Outlook Calendar, Teams, and Emails
+- **💾 Report Export**: Download reports in multiple formats
+- **🎨 Modern UI**: Responsive React-based interface with TypeScript
 
 ## Project Structure
 
 ```
 MySecretary/
-├── backend/           # Node.js Express API server
-│   ├── index.js      # Main server file
-│   ├── package.json  # Backend dependencies
-│   └── .env.example  # Environment variables template
-├── frontend/         # React TypeScript application
-│   ├── src/         # React source code
-│   ├── public/      # Static assets
-│   ├── package.json # Frontend dependencies
-│   └── tsconfig.json # TypeScript configuration
-└── README.md        # This file
+├── src/
+│   ├── backend/
+│   │   ├── index.js                      # Main Express server
+│   │   ├── copilot-integration.js        # Copilot API integration
+│   │   ├── copilot-routes.js             # Copilot API endpoints
+│   │   ├── microsoft-graph-integration.js # Microsoft Graph API client
+│   │   ├── microsoft-graph-routes.js     # Microsoft Graph endpoints
+│   │   ├── package.json                  # Dependencies
+│   │   └── .env.example                  # Environment variables template
+│   └── frontend/
+│       ├── App.tsx                       # Main React component
+│       ├── App.css                       # Styling
+│       ├── index.tsx                     # Entry point
+│       ├── components/
+│       │   ├── DailyReportGenerator.tsx # Report generation UI
+│       │   ├── ActivityLog.tsx          # Activity tracking UI
+│       │   └── ProjectManager.tsx       # Project management UI
+│       └── package.json                  # Dependencies
+├── .env.example                          # Environment variables template
+├── README.md                             # This file
+└── package.*.json                        # Configuration files
 ```
 
 ## Getting Started
@@ -75,19 +89,83 @@ MySecretary/
    ```
    The React app will open at `http://localhost:3000`
 
-### Microsoft Teams Integration Setup
+### Environment Configuration
 
-1. Register your application in Azure Active Directory
-2. Configure the required permissions for Microsoft Graph API
-3. Update the `.env` file with your Azure credentials
-4. Follow the Microsoft Teams app development guide for additional setup
+1. **Create `.env` file from template:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure Azure OpenAI (for Copilot):**
+   ```env
+   AZURE_OPENAI_API_KEY=your_azure_openai_api_key
+   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+   AZURE_OPENAI_DEPLOYMENT_NAME=deployment-name
+   AI_MODEL=gpt-4
+   ```
+
+3. **Configure Microsoft Graph (optional - for M365 sync):**
+   ```env
+   MICROSOFT_GRAPH_TOKEN=your_graph_api_token
+   ```
+
+4. **Additional Configuration:**
+   ```env
+   PORT=3001
+   NODE_ENV=development
+   DAILY_REPORT_LANGUAGE=ja
+   ```
+
+### Azure OpenAI Setup
+
+1. Create Azure OpenAI resource in Azure Portal
+2. Deploy a gpt-4 model
+3. Get API key and endpoint
+4. Add to `.env` file
+
+### Microsoft Graph Setup (Optional)
+
+1. Register application in Azure AD
+2. Grant permissions: `Calendar.Read`, `Mail.Read`, `TeamSettings.Read`
+3. Obtain access token using OAuth 2.0
+4. Add token to `.env` file (or configure OAuth flow in backend)
 
 ## API Endpoints
 
+### Core Endpoints
 - `GET /` - API information and available endpoints
 - `GET /health` - Health check endpoint
-- `GET /api/tasks` - Task management endpoint
-- `GET /api/teams` - Microsoft Teams integration endpoint
+
+### Activity Management
+- `GET /api/activities` - List activities (with date/project filtering)
+- `POST /api/activities` - Create new activity
+- `GET /api/activities/:id` - Get specific activity
+- `PUT /api/activities/:id` - Update activity
+- `DELETE /api/activities/:id` - Delete activity
+
+### Project Management
+- `GET /api/projects` - List all projects
+- `POST /api/projects` - Create new project
+- `GET /api/projects/:id` - Get specific project
+- `PUT /api/projects/:id` - Update project status/details
+
+### Daily Reports
+- `POST /api/reports/generate` - Generate daily report from activities
+- `GET /api/reports` - List reports (with date/user filtering)
+- `GET /api/reports/:id` - Get specific report
+
+### Copilot Integration
+- `POST /api/copilot/generate-report` - Generate AI-powered daily report
+- `POST /api/copilot/summarize` - Summarize text using Copilot
+- `POST /api/copilot/extract-key-points` - Extract key points from activities
+- `GET /api/copilot/status` - Check Copilot integration status
+
+### Microsoft Graph Integration
+- `GET /api/microsoft-graph/calendar` - Fetch calendar events (query: date)
+- `GET /api/microsoft-graph/emails` - Fetch recent emails (query: limit)
+- `GET /api/microsoft-graph/teams` - Fetch Teams activity
+- `GET /api/microsoft-graph/merged-activities` - Get merged activities from all sources
+- `GET /api/microsoft-graph/status` - Check Microsoft Graph configuration
 
 ## Technologies Used
 

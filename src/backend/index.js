@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const copilotRoutes = require('./copilot-routes');
+const microsoftGraphRoutes = require('./microsoft-graph-routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -131,6 +132,9 @@ app.put('/api/projects/:id', (req, res) => {
 
 // Mount Copilot routes
 app.use('/api/copilot', copilotRoutes);
+
+// Mount Microsoft Graph routes
+app.use('/api/microsoft-graph', microsoftGraphRoutes);
 
 // Daily Report Generation Endpoints
 app.post('/api/reports/generate', (req, res) => {

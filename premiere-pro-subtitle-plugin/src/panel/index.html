@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Subtitle Auto-Placer</title>
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>字幕自動配置プラグイン</h1>
+        <p>Vrew SRT形式の字幕ファイルをPremiere Proに自動で配置します</p>
+
+        <div class="section">
+            <h2>1. SRTファイルを選択</h2>
+            <div class="input-group">
+                <input type="file" id="srtFileInput" accept=".srt" />
+                <span id="fileName" class="file-name">ファイルを選択してください</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. テンプレート設定</h2>
+            <div class="template-settings">
+                <div class="setting-row">
+                    <label for="fontFamily">フォント:</label>
+                    <select id="fontFamily">
+                        <option value="Arial">Arial</option>
+                        <option value="Helvetica">Helvetica</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Courier">Courier</option>
+                    </select>
+                </div>
+
+                <div class="setting-row">
+                    <label for="fontSize">フォントサイズ:</label>
+                    <input type="number" id="fontSize" value="48" min="10" max="200" />
+                </div>
+
+                <div class="setting-row">
+                    <label for="fontColor">テキストカラー:</label>
+                    <input type="color" id="fontColor" value="#FFFFFF" />
+                </div>
+
+                <div class="setting-row">
+                    <label for="bgColor">背景色:</label>
+                    <input type="color" id="bgColor" value="#000000" />
+                </div>
+
+                <div class="setting-row">
+                    <label for="opacity">透明度:</label>
+                    <input type="range" id="opacity" min="0" max="100" value="80" />
+                    <span id="opacityValue">80%</span>
+                </div>
+
+                <div class="setting-row">
+                    <label for="verticalPosition">垂直位置:</label>
+                    <select id="verticalPosition">
+                        <option value="bottom">下部</option>
+                        <option value="middle">中央</option>
+                        <option value="top">上部</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3. 配置オプション</h2>
+            <div class="options">
+                <label class="checkbox">
+                    <input type="checkbox" id="addBackground" checked />
+                    背景を追加
+                </label>
+                <label class="checkbox">
+                    <input type="checkbox" id="addShadow" checked />
+                    シャドウを追加
+                </label>
+            </div>
+        </div>
+
+        <div class="section">
+            <button id="applyButton" class="apply-btn" disabled>字幕を配置する</button>
+        </div>
+
+        <div id="statusArea" class="status-area"></div>
+    </div>
+
+    <script src="./script.js"></script>
+</body>
+</html>

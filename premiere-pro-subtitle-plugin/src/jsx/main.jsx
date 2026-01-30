@@ -13,8 +13,8 @@ function log(message) {
     } catch(e) {}
 }
 
-// グローバルPremiere Pro API
-var app = require('premiere');
+// Premiere Pro ExtendScript環境での実行
+// app は ExtendScript環境で自動的に利用可能
 
 /**
  * SRT字幕データを解析する
